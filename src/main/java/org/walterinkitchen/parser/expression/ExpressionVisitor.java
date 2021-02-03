@@ -64,4 +64,8 @@ public interface ExpressionVisitor<C, T> {
     default T visit(LimitExpression expression, C context) {
         return visitDefault(expression, context);
     }
+
+    default T visit(StarExpression expression, C context) {
+        return visitDefault(expression, context);
+    }
 }

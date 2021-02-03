@@ -1,2 +1,4 @@
 /target/
 /.idea/
+/.gen/
+/src/main/java/sql/grammer/
