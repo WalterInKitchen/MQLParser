@@ -18,6 +18,11 @@ public class ProjectStage extends AbsStage {
         return stage;
     }
 
+    @Override
+    <T, C> T accept(StageVisitor<T, C> visitor, C context) {
+        return visitor.visit(this, context);
+    }
+
     @Data
     @AllArgsConstructor
     public static class Field {

@@ -5,4 +5,6 @@ package org.walterinkitchen.parser.stage;
  */
 public abstract class AbsStage {
 
+    abstract <T, C> T accept(StageVisitor<T, C> visitor, C context);
+
 }

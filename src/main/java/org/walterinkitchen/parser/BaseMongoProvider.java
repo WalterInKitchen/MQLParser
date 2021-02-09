@@ -3,7 +3,10 @@ package org.walterinkitchen.parser;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
-import org.walterinkitchen.parser.expression.Expression;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationResults;
+import org.walterinkitchen.parser.aggregate.AggregationBuilder;
 import org.walterinkitchen.parser.sqlParser.MySQLLexer;
 import org.walterinkitchen.parser.sqlParser.MySQLParser;
 
@@ -12,6 +15,14 @@ import java.util.List;
 
 public class BaseMongoProvider implements MongoProvider, ANTLRErrorListener {
 
+    private final MongoTemplate mongoTemplate;
+    private final AggregationBuilder aggregationBuilder;
+
+    public BaseMongoProvider(MongoTemplate mongoTemplate) {
+        this.mongoTemplate = mongoTemplate;
+        this.aggregationBuilder = AggregationBuilder.buildDefaultBuilder();
+    }
+
     @Override
     public <T> List<T> query(String ql, Class<T> outputType) {
         MySQLLexer lexer = new MySQLLexer(CharStreams.fromString(ql));
@@ -19,14 +30,14 @@ public class BaseMongoProvider implements MongoProvider, ANTLRErrorListener {
         MySQLParser parser = new MySQLParser(tokenStream);
         parser.removeErrorListeners();
         parser.addErrorListener(this);
-        MySQLParser.QueryContext query = parser.query();
+        MySQLParser.QueryExpressionContext query = parser.queryExpression();
 
         GrammarVisitor visitor = new GrammarVisitor();
         GrammarVisitor.Result result = query.accept(visitor);
 
-        Expression rootExpression = result.getRootExpression();
-
-        return null;
+        AggregationBuilder.Result ares = aggregationBuilder.buildAggregation(result.getStages());
+        AggregationResults<T> aggregationResults = mongoTemplate.aggregate(Aggregation.newAggregation(ares.getOperations()), ares.getCollection(), outputType);
+        return aggregationResults.getMappedResults();
     }
 
     @Override
