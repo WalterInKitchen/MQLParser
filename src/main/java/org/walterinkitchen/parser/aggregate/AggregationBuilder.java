@@ -15,10 +15,13 @@ public class AggregationBuilder {
     }
 
     public static AggregationBuilder buildDefaultBuilder() {
-        LimitAggregateChain limit = new LimitAggregateChain(null);
+        EmptyAggregateChain tail = new EmptyAggregateChain(null);
+        ProjectAggregateChain select = new ProjectAggregateChain(tail);
+        LimitAggregateChain limit = new LimitAggregateChain(select);
         SortAggregateChain sort = new SortAggregateChain(limit);
         FromAggregateChain from = new FromAggregateChain(sort);
-        return new AggregationBuilder(from);
+        AddIdAggregateChain id = new AddIdAggregateChain(from);
+        return new AggregationBuilder(id);
     }
 
     public Result buildAggregation(List<AbsStage> stages) {

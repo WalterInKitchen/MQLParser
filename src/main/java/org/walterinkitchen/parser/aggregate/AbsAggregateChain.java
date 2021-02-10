@@ -4,6 +4,7 @@ import lombok.Data;
 import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
 import org.walterinkitchen.parser.stage.AbsStage;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public abstract class AbsAggregateChain {
@@ -33,8 +34,8 @@ public abstract class AbsAggregateChain {
     @Data
     static class Result {
         private String collection;
-        List<AggregationOperation> operations;
-        List<AbsStage> stages;
+        List<AggregationOperation> operations = new ArrayList<>();
+        List<AbsStage> stages = new ArrayList<>();
 
         public void merge(Result result) {
             this.operations.addAll(result.getOperations());
@@ -45,8 +46,8 @@ public abstract class AbsAggregateChain {
 
         public static Result build(List<AggregationOperation> operations, List<AbsStage> stages) {
             Result result = new Result();
-            result.setOperations(operations);
-            result.setStages(stages);
+            result.getOperations().addAll(operations);
+            result.getStages().addAll(stages);
             return result;
         }
     }

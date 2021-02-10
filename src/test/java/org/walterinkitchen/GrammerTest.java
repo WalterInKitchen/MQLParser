@@ -1,6 +1,9 @@
 package org.walterinkitchen;
 
+import com.mongodb.MongoClientURI;
+import org.springframework.data.mongodb.MongoDbFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.SimpleMongoDbFactory;
 import org.walterinkitchen.parser.BaseMongoProvider;
 
 import java.util.List;
@@ -8,7 +11,10 @@ import java.util.List;
 public class GrammerTest {
 
     public MongoTemplate mongoTemplate() {
-        return null;
+        MongoClientURI uri = new MongoClientURI("mongodb://root:123456@127.0.0.1:17018,127.0.0.1:17017/?authSource=admin&replicaSet=rs0&readPreference=primary");
+        MongoDbFactory factory = new SimpleMongoDbFactory(uri);
+        MongoTemplate template = new MongoTemplate(factory);
+        return template;
     }
 
 //    @Test

@@ -27,6 +27,6 @@ public class ProjectStage extends AbsStage {
     @AllArgsConstructor
     public static class Field {
         private Expression expression;
-        private String as;
+        private String alias;
     }
 }
