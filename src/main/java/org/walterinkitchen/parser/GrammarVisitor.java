@@ -117,6 +117,13 @@ public class GrammarVisitor extends MySQLParserBaseVisitor<GrammarVisitor.Result
     }
 
     @Override
+    public Result visitPureIdentifier(MySQLParser.PureIdentifierContext ctx) {
+        String text = ctx.getText();
+        this.context.optQ.push(text);
+        return null;
+    }
+
+    @Override
     public Result visitTableRef(MySQLParser.TableRefContext ctx) {
         String table = ctx.qualifiedIdentifier().getText();
         FromStage stage = new FromStage(table);
