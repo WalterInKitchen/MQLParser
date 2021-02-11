@@ -21,6 +21,10 @@ public interface ExpressionVisitor<C, T> {
         return visitDefault(expression, context);
     }
 
+    default T visit(NullLiteralExpression expression, C context) {
+        return visitDefault(expression, context);
+    }
+
     default T visit(BooleanLiteralExpression expression, C context) {
         return visitDefault(expression, context);
     }
@@ -41,11 +45,19 @@ public interface ExpressionVisitor<C, T> {
         return visitDefault(expression, context);
     }
 
+    default T visit(XorExpression expression, C context) {
+        return visitDefault(expression, context);
+    }
+
     default T visit(NotExpression expression, C context) {
         return visitDefault(expression, context);
     }
 
     default T visit(CompareExpression expression, C context) {
+        return visitDefault(expression, context);
+    }
+
+    default T visit(CompareSoundsLikeExpression expression, C context) {
         return visitDefault(expression, context);
     }
 

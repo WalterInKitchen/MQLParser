@@ -3,13 +3,13 @@ package org.walterinkitchen.parser;
 import lombok.Data;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.walterinkitchen.parser.exception.LimitClauseInvalidException;
-import org.walterinkitchen.parser.expression.Expression;
-import org.walterinkitchen.parser.expression.FieldExpression;
+import org.walterinkitchen.parser.expression.*;
 import org.walterinkitchen.parser.misc.Direction;
 import org.walterinkitchen.parser.sqlParser.MySQLParser;
 import org.walterinkitchen.parser.sqlParser.MySQLParserBaseVisitor;
 import org.walterinkitchen.parser.stage.*;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 public class GrammarVisitor extends MySQLParserBaseVisitor<GrammarVisitor.Result> {
@@ -210,6 +210,233 @@ public class GrammarVisitor extends MySQLParserBaseVisitor<GrammarVisitor.Result
         String text = option.getText();
         long lv = Long.parseLong(text);
         this.context.optQ.push(lv);
+        return null;
+    }
+
+    @Override
+    public Result visitExprAnd(MySQLParser.ExprAndContext ctx) {
+        ctx.expr().forEach(x -> x.accept(this));
+        Expression expr2 = (Expression) this.context.optQ.pop();
+        Expression expr1 = (Expression) this.context.optQ.pop();
+        AndExpression and = AndExpression.build(Arrays.asList(expr1, expr2));
+        this.context.optQ.push(and);
+        return null;
+    }
+
+    @Override
+    public Result visitExprOr(MySQLParser.ExprOrContext ctx) {
+        ctx.expr().forEach(x -> x.accept(this));
+        Expression expr2 = (Expression) this.context.optQ.pop();
+        Expression expr1 = (Expression) this.context.optQ.pop();
+        OrExpression or = OrExpression.build(Arrays.asList(expr1, expr2));
+        this.context.optQ.push(or);
+        return null;
+    }
+
+    @Override
+    public Result visitExprXor(MySQLParser.ExprXorContext ctx) {
+        ctx.expr().forEach(x -> x.accept(this));
+        Expression expr2 = (Expression) this.context.optQ.pop();
+        Expression expr1 = (Expression) this.context.optQ.pop();
+        XorExpression xor = XorExpression.build(Arrays.asList(expr1, expr2));
+        this.context.optQ.push(xor);
+        return null;
+    }
+
+    @Override
+    public Result visitExprNot(MySQLParser.ExprNotContext ctx) {
+        ctx.expr().accept(this);
+        Expression expr = (Expression) this.context.optQ.pop();
+        expr = NotExpression.build(expr);
+        this.context.optQ.push(expr);
+        return null;
+    }
+
+    @Override
+    public Result visitExprIs(MySQLParser.ExprIsContext ctx) {
+        ctx.boolPri().accept(this);
+        Expression expression = (Expression) this.context.optQ.pop();
+        CompareIsExpression.Type type = null;
+        if (ctx.FALSE_SYMBOL() != null) {
+            type = CompareIsExpression.Type.FALSE;
+        } else if (ctx.TRUE_SYMBOL() != null) {
+            type = CompareIsExpression.Type.TRUE;
+        } else if (ctx.UNKNOWN_SYMBOL() != null) {
+            type = CompareIsExpression.Type.UNKNOWN;
+        }
+        if (type != null) {
+            expression = CompareIsExpression.build(expression, type);
+            if (ctx.notRule() != null) {
+                expression = NotExpression.build(expression);
+            }
+        }
+        this.context.optQ.push(expression);
+        return null;
+    }
+
+    @Override
+    public Result visitPrimaryExprIsNull(MySQLParser.PrimaryExprIsNullContext ctx) {
+        ctx.boolPri().accept(this);
+        Expression expression = (Expression) this.context.optQ.pop();
+        expression = CompareIsExpression.build(expression, CompareIsExpression.Type.NULL);
+        if (ctx.notRule() != null) {
+            expression = NotExpression.build(expression);
+        }
+        this.context.optQ.push(expression);
+        return null;
+    }
+
+    @Override
+    public Result visitPrimaryExprCompare(MySQLParser.PrimaryExprCompareContext ctx) {
+        ctx.compOp().accept(this);
+        BaseCompareExpression.Comparator comparator = (BaseCompareExpression.Comparator) this.context.optQ.pop();
+        ctx.boolPri().accept(this);
+        Expression expr1 = (Expression) this.context.optQ.pop();
+        ctx.predicate().accept(this);
+        Expression expr2 = (Expression) this.context.optQ.pop();
+
+        BaseCompareExpression expression = BaseCompareExpression.build(expr1, comparator, expr2);
+        this.context.optQ.push(expression);
+        return null;
+    }
+
+    @Override
+    public Result visitPrimaryExprAllAny(MySQLParser.PrimaryExprAllAnyContext ctx) {
+        ctx.compOp().accept(this);
+        BaseCompareExpression.Comparator comparator = (BaseCompareExpression.Comparator) this.context.optQ.pop();
+        ctx.boolPri().accept(this);
+        Expression expr1 = (Expression) this.context.optQ.pop();
+        ctx.subquery().accept(this);
+        Expression expr2 = (Expression) this.context.optQ.pop();
+
+        AllAnyCompareExpression.Type type = null;
+        if (ctx.ALL_SYMBOL() != null) {
+            type = AllAnyCompareExpression.Type.ALL;
+        } else if (ctx.ANY_SYMBOL() != null) {
+            type = AllAnyCompareExpression.Type.ANY;
+        }
+        AllAnyCompareExpression expression = AllAnyCompareExpression.build(type, expr1, comparator, expr2);
+        this.context.optQ.push(expression);
+        return null;
+    }
+
+    @Override
+    public Result visitPredicate(MySQLParser.PredicateContext ctx) {
+        Expression expression = null;
+        ctx.bitExpr().forEach(x -> x.accept(this));
+        if (ctx.predicateOperations() != null) {
+            Expression expr1 = (Expression) this.context.optQ.pop();
+            this.context.optQ.push(expr1);
+            ctx.predicateOperations().accept(this);
+            Expression expr2 = (Expression) this.context.optQ.pop();
+
+            if (ctx.notRule() != null) {
+                expression = NotExpression.build(expr2);
+            }
+
+            this.context.optQ.push(expression);
+            return null;
+        }
+        if (ctx.SOUNDS_SYMBOL() != null && ctx.LIKE_SYMBOL() != null) {
+            Expression expr2 = (Expression) this.context.optQ.pop();
+            Expression expr1 = (Expression) this.context.optQ.pop();
+            expression = CompareSoundsLikeExpression.build(expr1, expr2);
+            this.context.optQ.push(expression);
+            return null;
+        }
+
+        return null;
+    }
+
+    @Override
+    public Result visitPredicateExprIn(MySQLParser.PredicateExprInContext ctx) {
+        Expression expr1 = (Expression) this.context.optQ.pop();
+        Expression expr2 = null;
+        if (ctx.subquery() != null) {
+            ctx.subquery().accept(this);
+            expr2 = (Expression) this.context.optQ.pop();
+        }
+
+        if (ctx.exprList() != null) {
+            ctx.exprList().accept(this);
+            expr2 = (Expression) this.context.optQ.pop();
+        }
+
+        InArrayCompareExpression expression = InArrayCompareExpression.build(expr1, expr2);
+        this.context.optQ.push(expression);
+        return null;
+    }
+
+    @Override
+    public Result visitPredicateExprBetween(MySQLParser.PredicateExprBetweenContext ctx) {
+        Expression expression = (Expression) this.context.optQ.pop();
+        ctx.bitExpr().accept(this);
+        Expression expr1 = (Expression) this.context.optQ.pop();
+        ctx.predicate().accept(this);
+        Expression expr2 = (Expression) this.context.optQ.pop();
+
+        BaseCompareExpression greaterThanSmaller = BaseCompareExpression.build(expression, BaseCompareExpression.Comparator.GTE, expr1);
+        BaseCompareExpression smallerThanBigger = BaseCompareExpression.build(expression, BaseCompareExpression.Comparator.LTE, expr2);
+        expression = AndExpression.build(Arrays.asList(greaterThanSmaller, smallerThanBigger));
+        this.context.optQ.push(expression);
+        return null;
+    }
+
+
+    @Override
+    public Result visitCompOp(MySQLParser.CompOpContext ctx) {
+        BaseCompareExpression.Comparator comparator = null;
+
+        if (ctx.EQUAL_OPERATOR() != null) {
+            comparator = BaseCompareExpression.Comparator.EQ;
+        } else if (ctx.NULL_SAFE_EQUAL_OPERATOR() != null) {
+            comparator = BaseCompareExpression.Comparator.NULL_SAFE_EQ;
+        } else if (ctx.GREATER_OR_EQUAL_OPERATOR() != null) {
+            comparator = BaseCompareExpression.Comparator.GTE;
+        } else if (ctx.GREATER_THAN_OPERATOR() != null) {
+            comparator = BaseCompareExpression.Comparator.GT;
+        } else if (ctx.LESS_OR_EQUAL_OPERATOR() != null) {
+            comparator = BaseCompareExpression.Comparator.LTE;
+        } else if (ctx.LESS_THAN_OPERATOR() != null) {
+            comparator = BaseCompareExpression.Comparator.LT;
+        } else if (ctx.NOT_EQUAL_OPERATOR() != null) {
+            comparator = BaseCompareExpression.Comparator.NEQ;
+        }
+
+        this.context.optQ.push(comparator);
+        return null;
+    }
+
+    @Override
+    public Result visitTextLiteral(MySQLParser.TextLiteralContext ctx) {
+        StringLiteralExpression expression = StringLiteralExpression.build(ctx.getText());
+        this.context.optQ.push(expression);
+        return null;
+    }
+
+    @Override
+    public Result visitNumLiteral(MySQLParser.NumLiteralContext ctx) {
+        BigDecimal decimal = new BigDecimal(ctx.getText());
+        NumberLiteralExpression expression = NumberLiteralExpression.build(decimal);
+        this.context.optQ.push(expression);
+        return null;
+    }
+
+    @Override
+    public Result visitNullLiteral(MySQLParser.NullLiteralContext ctx) {
+        this.context.optQ.push(NullLiteralExpression.build());
+        return null;
+    }
+
+    @Override
+    public Result visitBoolLiteral(MySQLParser.BoolLiteralContext ctx) {
+        BooleanLiteralExpression expression = null;
+        if (ctx.TRUE_SYMBOL() != null) {
+            expression = BooleanLiteralExpression.build(true);
+        } else if (ctx.FALSE_SYMBOL() != null) {
+            expression = BooleanLiteralExpression.build(false);
+        }
+        this.context.optQ.push(expression);
         return null;
     }
 
