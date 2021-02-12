@@ -118,6 +118,19 @@ public class MatchAggregateChain extends AbsAggregateChain {
         }
 
         @Override
+        public Void visit(XorExpression expression, ExprContext context) {
+            List<Object> subExprs = new ArrayList<>();
+            for (Expression expr : expression.getExpressions()) {
+                expr.accept(this, context);
+                subExprs.add(context.optQ.pop());
+            }
+
+            Document doc = new Document("$not", new Document("$eq", subExprs));
+            context.optQ.push(doc);
+            return null;
+        }
+
+        @Override
         public Void visit(FieldExpression expression, ExprContext context) {
             String field = "$" + expression.getField();
             context.optQ.push(field);

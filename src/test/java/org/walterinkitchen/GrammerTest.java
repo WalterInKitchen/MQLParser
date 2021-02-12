@@ -31,7 +31,8 @@ public class GrammerTest {
 //        String sql = "SELECT name, price FROM goods ORDER BY price DESC, cost ASC LIMIT 10, 10";
 //        String sql = "SELECT field_1 AS f1 FROM test ORDER BY field_1 ASC LIMIT 10";
 //        String sql = "SELECT field_1 AS f1 FROM test WHERE price > 1 OR field_1 > 1 ORDER BY field_1 ASC LIMIT 10";
-        String sql = "SELECT field_1 AS f1 FROM test WHERE fd=NULL";
+//        String sql = "SELECT field_1 AS f1 FROM test WHERE fd=NULL";
+        String sql = "SELECT field_1 ,field_2  FROM test WHERE field_1>2 XOR field_2>2";
         BaseMongoProvider provider = new BaseMongoProvider(mongoTemplate());
         List<Object> list = provider.query(sql, Object.class);
 
