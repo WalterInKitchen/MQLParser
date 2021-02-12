@@ -143,6 +143,12 @@ public class MatchAggregateChain extends AbsAggregateChain {
             return null;
         }
 
+        @Override
+        public Void visit(NullLiteralExpression expression, ExprContext context) {
+            context.optQ.push(null);
+            return null;
+        }
+
         static Visitor getInstance() {
             if (instance == null) {
                 synchronized (Visitor.class) {
