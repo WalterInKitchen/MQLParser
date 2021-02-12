@@ -5,6 +5,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.walterinkitchen.parser.exception.LimitClauseInvalidException;
 import org.walterinkitchen.parser.expression.*;
 import org.walterinkitchen.parser.misc.Direction;
+import org.walterinkitchen.parser.sqlParser.MySQLLexer;
 import org.walterinkitchen.parser.sqlParser.MySQLParser;
 import org.walterinkitchen.parser.sqlParser.MySQLParserBaseVisitor;
 import org.walterinkitchen.parser.stage.*;
@@ -382,6 +383,43 @@ public class GrammarVisitor extends MySQLParserBaseVisitor<GrammarVisitor.Result
         return null;
     }
 
+    @Override
+    public Result visitBitExpr(MySQLParser.BitExprContext ctx) {
+        if (ctx.simpleExpr() != null) {
+            ctx.simpleExpr().accept(this);
+            return null;
+        }
+
+        ctx.bitExpr().forEach(e -> e.accept(this));
+        Expression expr2 = (Expression) this.context.optQ.pop();
+        Expression expr1 = (Expression) this.context.optQ.pop();
+
+        //todo:impl
+        switch (ctx.op.getType()) {
+            case MySQLLexer.BITWISE_XOR_OPERATOR:
+                break;
+            case MySQLLexer.MULT_OPERATOR:
+                this.context.optQ.push(ArithmeticExpression.build(expr1, ArithmeticExpression.Operator.MULTI, expr2));
+                return null;
+            case MySQLLexer.DIV_OPERATOR:
+            case MySQLLexer.DIV_SYMBOL:
+                this.context.optQ.push(ArithmeticExpression.build(expr1, ArithmeticExpression.Operator.DIV, expr2));
+                return null;
+            case MySQLLexer.MOD_SYMBOL:
+            case MySQLLexer.MOD_OPERATOR:
+                this.context.optQ.push(ArithmeticExpression.build(expr1, ArithmeticExpression.Operator.MOD, expr2));
+                return null;
+
+            case MySQLLexer.PLUS_OPERATOR:
+                this.context.optQ.push(ArithmeticExpression.build(expr1, ArithmeticExpression.Operator.PLUS, expr2));
+                return null;
+            case MySQLLexer.MINUS_OPERATOR:
+                this.context.optQ.push(ArithmeticExpression.build(expr1, ArithmeticExpression.Operator.MINUS, expr2));
+                return null;
+        }
+
+        return null;
+    }
 
     @Override
     public Result visitCompOp(MySQLParser.CompOpContext ctx) {

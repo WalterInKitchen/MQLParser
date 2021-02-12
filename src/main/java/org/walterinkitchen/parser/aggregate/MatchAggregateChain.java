@@ -131,6 +131,34 @@ public class MatchAggregateChain extends AbsAggregateChain {
         }
 
         @Override
+        public Void visit(ArithmeticExpression expression, ExprContext context) {
+            expression.getExpr1().accept(this, context);
+            Object expr1 = context.optQ.pop();
+            expression.getExpr2().accept(this, context);
+            Object expr2 = context.optQ.pop();
+
+            switch (expression.getOperator()) {
+                case MOD:
+                    context.optQ.push(new Document("$mod", Arrays.asList(expr1, expr2)));
+                    break;
+                case MULTI:
+                    context.optQ.push(new Document("$multiply", Arrays.asList(expr1, expr2)));
+                    break;
+                case DIV:
+                    context.optQ.push(new Document("$divide", Arrays.asList(expr1, expr2)));
+                    break;
+                case PLUS:
+                    context.optQ.push(new Document("$add", Arrays.asList(expr1, expr2)));
+                    break;
+                case MINUS:
+                    context.optQ.push(new Document("$subtract", Arrays.asList(expr1, expr2)));
+                    break;
+            }
+
+            return null;
+        }
+
+        @Override
         public Void visit(FieldExpression expression, ExprContext context) {
             String field = "$" + expression.getField();
             context.optQ.push(field);
