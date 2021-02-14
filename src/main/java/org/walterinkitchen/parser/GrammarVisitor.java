@@ -458,9 +458,10 @@ public class GrammarVisitor extends MySQLParserBaseVisitor<GrammarVisitor.Result
     }
 
     @Override
-    public Result visitTextLiteral(MySQLParser.TextLiteralContext ctx) {
-        StringLiteralExpression expression = StringLiteralExpression.build(ctx.getText());
-        this.context.optQ.push(expression);
+    public Result visitTextStringLiteral(MySQLParser.TextStringLiteralContext ctx) {
+        String text = ctx.value.getText();
+        text = text.substring(1, text.length() - 1);
+        this.context.optQ.push(StringLiteralExpression.build(text));
         return null;
     }
 
