@@ -1,5 +1,7 @@
 package org.walterinkitchen.parser.expression;
 
+import java.lang.reflect.Array;
+
 /**
  * Visitor for expression
  */
@@ -74,6 +76,10 @@ public interface ExpressionVisitor<C, T> {
     }
 
     default T visit(LimitExpression expression, C context) {
+        return visitDefault(expression, context);
+    }
+
+    default T visit(ArrayExpression expression, C context) {
         return visitDefault(expression, context);
     }
 }

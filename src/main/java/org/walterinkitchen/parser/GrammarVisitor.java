@@ -329,10 +329,10 @@ public class GrammarVisitor extends MySQLParserBaseVisitor<GrammarVisitor.Result
             Expression expr1 = (Expression) this.context.optQ.pop();
             this.context.optQ.push(expr1);
             ctx.predicateOperations().accept(this);
-            Expression expr2 = (Expression) this.context.optQ.pop();
+            expression = (Expression) this.context.optQ.pop();
 
             if (ctx.notRule() != null) {
-                expression = NotExpression.build(expr2);
+                expression = NotExpression.build(expression);
             }
 
             this.context.optQ.push(expression);
@@ -365,6 +365,19 @@ public class GrammarVisitor extends MySQLParserBaseVisitor<GrammarVisitor.Result
 
         InArrayCompareExpression expression = InArrayCompareExpression.build(expr1, expr2);
         this.context.optQ.push(expression);
+        return null;
+    }
+
+    @Override
+    public Result visitExprList(MySQLParser.ExprListContext ctx) {
+        List<Expression> expressions = new ArrayList<>(ctx.expr().size());
+        for (MySQLParser.ExprContext expr : ctx.expr()) {
+            expr.accept(this);
+            Expression expression = (Expression) this.context.optQ.pop();
+            expressions.add(expression);
+        }
+        ArrayExpression arrayExpression = ArrayExpression.build(expressions);
+        this.context.optQ.push(arrayExpression);
         return null;
     }
 

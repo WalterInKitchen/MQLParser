@@ -159,6 +159,27 @@ public class MatchAggregateChain extends AbsAggregateChain {
         }
 
         @Override
+        public Void visit(InArrayCompareExpression expression, ExprContext context) {
+            expression.getExpr1().accept(this, context);
+            Object expr1 = context.optQ.pop();
+            expression.getExpr2().accept(this, context);
+            Object expr2 = context.optQ.pop();
+            context.optQ.push(new Document("$in", Arrays.asList(expr1, expr2)));
+            return null;
+        }
+
+        @Override
+        public Void visit(ArrayExpression expression, ExprContext context) {
+            List<Object> valList = new ArrayList<>();
+            for (Expression expr : expression.getExpressions()) {
+                expr.accept(this, context);
+                valList.add(context.optQ.pop());
+            }
+            context.optQ.push(valList);
+            return null;
+        }
+
+        @Override
         public Void visit(FieldExpression expression, ExprContext context) {
             String field = "$" + expression.getField();
             context.optQ.push(field);
