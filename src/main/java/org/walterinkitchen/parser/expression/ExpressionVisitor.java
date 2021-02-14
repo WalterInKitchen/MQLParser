@@ -1,7 +1,5 @@
 package org.walterinkitchen.parser.expression;
 
-import java.lang.reflect.Array;
-
 /**
  * Visitor for expression
  */
@@ -80,6 +78,10 @@ public interface ExpressionVisitor<C, T> {
     }
 
     default T visit(ArrayExpression expression, C context) {
+        return visitDefault(expression, context);
+    }
+
+    default T visit(AllElementExpression expression, C context) {
         return visitDefault(expression, context);
     }
 }

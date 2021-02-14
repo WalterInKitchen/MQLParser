@@ -84,13 +84,12 @@ public class GrammarVisitor extends MySQLParserBaseVisitor<GrammarVisitor.Result
 
     @Override
     public Result visitSelectItemList(MySQLParser.SelectItemListContext ctx) {
+        List<ProjectStage.Field> fields = new ArrayList<>();
+
         if (ctx.MULT_OPERATOR() != null) {
-            ProjectStage stage = ProjectStage.build(Collections.emptyList());
-            this.context.optQ.push(stage);
-            return null;
+            fields.add(new ProjectStage.Field(new AllElementExpression(), null));
         }
 
-        List<ProjectStage.Field> fields = new ArrayList<>();
         List<MySQLParser.SelectItemContext> itemsCtx = ctx.selectItem();
         for (MySQLParser.SelectItemContext itemContext : itemsCtx) {
             itemContext.accept(this);

@@ -2,6 +2,7 @@ package org.walterinkitchen.parser.aggregate;
 
 import org.bson.Document;
 import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
+import org.walterinkitchen.parser.expression.AllElementExpression;
 import org.walterinkitchen.parser.expression.FieldExpression;
 import org.walterinkitchen.parser.stage.AbsStage;
 import org.walterinkitchen.parser.stage.ProjectStage;
@@ -29,16 +30,24 @@ public class ProjectAggregateChain extends AbsAggregateChain {
     }
 
     private Collection<? extends AggregationOperation> convertProjectStage(ProjectStage stage, Context context) {
+        int mode = 1;
         Map<String, Object> project = new HashMap<>();
         for (ProjectStage.Field field : stage.getFields()) {
+            if (field.getExpression() instanceof AllElementExpression) {
+                mode = 2;
+                continue;
+            }
             String fd = ((FieldExpression) field.getExpression()).getField();
             if (field.getAlias() != null) {
                 project.put(field.getAlias(), "$" + fd);
                 continue;
             }
-            project.put(fd, 1);
+            if (mode == 1) {
+                project.put(fd, 1);
+            }
         }
 
-        return project.isEmpty() ? Collections.emptyList() : Collections.singletonList(x -> new Document("$project", project));
+        String finalKeyWord = mode == 2 ? "$addFields" : "$project";
+        return project.isEmpty() ? Collections.emptyList() : Collections.singletonList(x -> new Document(finalKeyWord, project));
     }
 }
