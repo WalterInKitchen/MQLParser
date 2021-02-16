@@ -349,6 +349,21 @@ public class GrammarVisitor extends MySQLParserBaseVisitor<GrammarVisitor.Result
     }
 
     @Override
+    public Result visitPredicateExprLike(MySQLParser.PredicateExprLikeContext ctx) {
+        Expression expr1 = (Expression) this.context.optQ.pop();
+        ctx.simpleExpr().get(0).accept(this);
+        Expression expr2 = (Expression) this.context.optQ.pop();
+        Expression escape = null;
+        if (ctx.simpleExpr().size() == 2) {
+            ctx.simpleExpr().get(1).accept(this);
+            escape = (Expression) this.context.optQ.pop();
+        }
+        CompareLikeExpression expression = CompareLikeExpression.build(expr1, expr2, escape);
+        this.context.optQ.push(expression);
+        return null;
+    }
+
+    @Override
     public Result visitPredicateExprIn(MySQLParser.PredicateExprInContext ctx) {
         Expression expr1 = (Expression) this.context.optQ.pop();
         Expression expr2 = null;

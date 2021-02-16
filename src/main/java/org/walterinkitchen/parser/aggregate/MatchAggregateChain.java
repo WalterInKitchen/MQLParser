@@ -211,6 +211,22 @@ public class MatchAggregateChain extends AbsAggregateChain {
             return null;
         }
 
+        @Override
+        public Void visit(CompareLikeExpression expression, ExprContext context) {
+            expression.getExpr1().accept(this, context);
+            Object expr1 = context.optQ.pop();
+            expression.getExpr2().accept(this, context);
+            Object expr2 = context.optQ.pop();
+
+            Map<String, Object> match = new HashMap<>();
+            match.put("input", expr1);
+            match.put("regex", expr2);
+
+            Document doc = new Document("$regexMatch", match);
+            context.optQ.push(doc);
+            return null;
+        }
+
         static Visitor getInstance() {
             if (instance == null) {
                 synchronized (Visitor.class) {

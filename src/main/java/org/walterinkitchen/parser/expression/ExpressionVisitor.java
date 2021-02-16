@@ -57,6 +57,10 @@ public interface ExpressionVisitor<C, T> {
         return visitDefault(expression, context);
     }
 
+    default T visit(CompareLikeExpression expression, C context) {
+        return visitDefault(expression, context);
+    }
+
     default T visit(CompareSoundsLikeExpression expression, C context) {
         return visitDefault(expression, context);
     }

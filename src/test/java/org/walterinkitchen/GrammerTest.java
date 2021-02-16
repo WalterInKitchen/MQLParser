@@ -35,7 +35,8 @@ public class GrammerTest {
 //        String sql = "SELECT field_1 ,field_2  FROM test WHERE field_1>2 XOR field_2>2";
 //        String sql = "SELECT field_1 ,field_2  FROM test WHERE field_1 + 2 = field_2";
 //        String sql = "SELECT *,field_1 AS f1,field_2, type  FROM test";
-        String sql = "SELECT *,field_1 AS f1,field_2, type  FROM test WHERE id = '601d32e58bff912880c35a91'";
+//        String sql = "SELECT *,field_1 AS f1,field_2, type  FROM test WHERE id = '601d32e58bff912880c35a91'";
+        String sql = "SELECT *,field_1 AS f1,field_2, type  FROM test WHERE name LIKE '\\^'";
         BaseMongoProvider provider = new BaseMongoProvider(mongoTemplate());
         List<Object> list = provider.query(sql, Object.class);
 
