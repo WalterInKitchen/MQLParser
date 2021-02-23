@@ -1,6 +1,4 @@
-# SqlToMongoParser
-
-## 说明
+## 简述
 
 借助该库，你可以用类似SQL语法来查询MongoDB的数据：
 
