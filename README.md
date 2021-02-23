@@ -2,11 +2,11 @@
 
 ## 说明
 
-这是一个SQL转MongoDB聚合解析器；该解析器将DML转为MongoDB聚合；
+借助该库，你可以用类似SQL语法来查询MongoDB的数据：
 
-该解析器仅支持部分DML
-
-## 支持的DML
-
-### SELECT
+```java
+String sql = "SELECT *,field_1 AS f1,field_2, type FROM test WHERE name LIKE '\\^'";
+BaseMongoProvider provider = new BaseMongoProvider(mongoTemplate());
+List<Object> list = provider.query(sql, Object.class);
+```
 
