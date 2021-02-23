@@ -88,14 +88,6 @@ query:
 ;
 
 simpleStatement:
-    // DDL
-    alterStatement
-    | createStatement
-    | dropStatement
-    | renameTableStatement
-    | truncateTableStatement
-    | {serverVersion >= 80000}? importStatement
-
     // DML
     | callStatement
     | deleteStatement
@@ -109,24 +101,6 @@ simpleStatement:
     | transactionOrLockingStatement
     | replicationStatement
     | preparedStatement
-
-    // Data Directory
-    | {serverVersion >= 80000}? cloneStatement
-
-    // Database administration
-    | accountManagementStatement
-    | tableAdministrationStatement
-    | installUninstallStatment
-    | setStatement // SET PASSWORD is handled in accountManagementStatement.
-    | showStatement
-    | {serverVersion >= 80000}? resourceGroupManagement
-    | otherAdministrativeStatement
-
-    // MySQL utilitity statements
-    | utilityStatement
-    | {serverVersion >= 50604}? getDiagnostics
-    | signalStatement
-    | resignalStatement
 ;
 
 //----------------- DDL statements -------------------------------------------------------------------------------------

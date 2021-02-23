@@ -88,4 +88,8 @@ public interface ExpressionVisitor<C, T> {
     default T visit(AllElementExpression expression, C context) {
         return visitDefault(expression, context);
     }
+
+    default T visit(FunctionCallExpression expression, C context) {
+        return visitDefault(expression, context);
+    }
 }

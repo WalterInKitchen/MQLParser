@@ -1,5 +1,8 @@
 package org.walterinkitchen.parser.exception;
 
-public class LimitClauseInvalidException extends RuntimeException {
+/**
+ * Limit子句无效
+ */
+public class LimitClauseInvalidException extends MqlRuntimeException {
 
 }

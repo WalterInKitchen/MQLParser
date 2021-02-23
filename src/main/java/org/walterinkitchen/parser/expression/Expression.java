@@ -15,5 +15,4 @@ public interface Expression {
      * @return the result
      */
     <C, T> T accept(ExpressionVisitor<C, T> visitor, C context);
-
 }

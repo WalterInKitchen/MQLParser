@@ -2,8 +2,12 @@ package org.walterinkitchen.parser;
 
 import lombok.Data;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.walterinkitchen.parser.exception.FunctionNotSupportedException;
 import org.walterinkitchen.parser.exception.LimitClauseInvalidException;
 import org.walterinkitchen.parser.expression.*;
+import org.walterinkitchen.parser.function.Function;
+import org.walterinkitchen.parser.function.FunctionProvider;
+import org.walterinkitchen.parser.function.SimpleFunctionProvider;
 import org.walterinkitchen.parser.misc.Direction;
 import org.walterinkitchen.parser.sqlParser.MySQLLexer;
 import org.walterinkitchen.parser.sqlParser.MySQLParser;
@@ -109,7 +113,8 @@ public class GrammarVisitor extends MySQLParserBaseVisitor<GrammarVisitor.Result
         String alias = null;
         if (ctx.selectAlias() != null) {
             ctx.selectAlias().accept(this);
-            alias = (String) this.context.optQ.pop();
+            Object alObj = this.context.optQ.pop();
+            alias = ((StringLiteralExpression) alObj).getText();
         }
         ProjectStage.Field field = new ProjectStage.Field(expression, alias);
         this.context.optQ.push(field);
@@ -119,7 +124,14 @@ public class GrammarVisitor extends MySQLParserBaseVisitor<GrammarVisitor.Result
     @Override
     public Result visitPureIdentifier(MySQLParser.PureIdentifierContext ctx) {
         String text = ctx.getText();
-        this.context.optQ.push(text);
+        this.context.optQ.push(StringLiteralExpression.build(text));
+        return null;
+    }
+
+    @Override
+    public Result visitIdentifierKeyword(MySQLParser.IdentifierKeywordContext ctx) {
+        String text = ctx.getText();
+        this.context.optQ.push(StringLiteralExpression.build(text));
         return null;
     }
 
@@ -506,9 +518,38 @@ public class GrammarVisitor extends MySQLParserBaseVisitor<GrammarVisitor.Result
         return null;
     }
 
+    @Override
+    public Result visitFunctionCall(MySQLParser.FunctionCallContext ctx) {
+        if (ctx.pureIdentifier() != null) {
+            String funcName = ctx.pureIdentifier().getText();
+            ctx.udfExprList().accept(this);
+            @SuppressWarnings("unchecked")
+            List<Expression> expressions = (List<Expression>) this.context.optQ.pop();
+            Function function = this.context.functionProvider.getFunctionByName(funcName);
+            if (function == null) {
+                throw new FunctionNotSupportedException(funcName);
+            }
+            Expression expression = function.call(expressions);
+            this.context.optQ.push(expression);
+        }
+        return null;
+    }
+
+    @Override
+    public Result visitUdfExprList(MySQLParser.UdfExprListContext ctx) {
+        List<Expression> expressions = new ArrayList<>(ctx.udfExpr().size());
+        for (MySQLParser.UdfExprContext expr : ctx.udfExpr()) {
+            expr.accept(this);
+            expressions.add((Expression) this.context.optQ.pop());
+        }
+        this.context.optQ.push(expressions);
+        return null;
+    }
+
     @Data
     private static class Context {
         private Deque<Object> optQ = new LinkedList<>();
+        private FunctionProvider functionProvider = new SimpleFunctionProvider();
     }
 
     @Data

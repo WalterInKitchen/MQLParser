@@ -180,6 +180,12 @@ public class MatchAggregateChain extends AbsAggregateChain {
         }
 
         @Override
+        public Void visit(FunctionCallExpression expression, ExprContext context) {
+            context.optQ.push(expression.explain());
+            return null;
+        }
+
+        @Override
         public Void visit(FieldExpression expression, ExprContext context) {
             String field = "$" + expression.getField();
             context.optQ.push(field);
