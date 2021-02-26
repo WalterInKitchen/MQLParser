@@ -5,9 +5,15 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import org.junit.Test;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.walterinkitchen.entity.Person;
 import org.walterinkitchen.parser.BaseMongoProvider;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Map;
 
 public class GrammerTest {
 
@@ -21,27 +27,50 @@ public class GrammerTest {
     }
 
     @Test
-    public void sqlTest() {
-//        String sql = "SELECT * FROM goods WHERE price > 100 && cost < price ORDER BY price DESC, cost ASC LIMIT 10, 100";
-//        String sql = "SELECT name, price FROM goods WHERE price > 100 && cost < price ORDER BY price DESC, cost ASC LIMIT 10, 100";
-//        String sql = "SELECT name, price FROM goods ORDER BY price DESC, cost ASC LIMIT 10, 10";
-//        String sql = "SELECT field_1 AS f1 FROM test ORDER BY field_1 ASC LIMIT 10";
-//        String sql = "SELECT field_1 AS f1 FROM test WHERE price > 1 OR field_1 > 1 ORDER BY field_1 ASC LIMIT 10";
-//        String sql = "SELECT field_1 AS f1 FROM test WHERE fd=NULL";
-//        String sql = "SELECT field_1 ,field_2  FROM test WHERE field_1>2 XOR field_2>2";
-//        String sql = "SELECT field_1 ,field_2  FROM test WHERE field_1 + 2 = field_2";
-//        String sql = "SELECT *,field_1 AS f1,field_2, type  FROM test";
-//        String sql = "SELECT *,field_1 AS f1,field_2, type  FROM test WHERE id = '601d32e58bff912880c35a91'";
-//        String sql = "SELECT *,field_1 AS f1,field_2, type  FROM test WHERE name LIKE '\\^'";
-//        String sql = "SELECT *,field_1 AS f1,field_2, type  FROM test WHERE date > DATE('2020', 'yyyy')";
-//        String sql = "SELECT * FROM test";
-//        String sql = "SELECT * FROM test WHERE dateToString(date, '%Y') = '2020'";
-//        String sql = "SELECT *, dateToString(date, '%Y') AS year FROM test";
-//        String sql = "SELECT *,dateToString(date, '%Y') AS year FROM test";
-        String sql = "SELECT *,dateToString(date, '%Y', '+08', '1999') AS year FROM test";
-        BaseMongoProvider provider = new BaseMongoProvider(mongoTemplate());
-        List<?> list = provider.query(sql, Object.class);
+    public void dateFromString() throws ParseException {
+        MongoTemplate template = mongoTemplate();
+        BaseMongoProvider provider = new BaseMongoProvider(template);
 
-        System.out.println(list);
+        //Insert test data
+        Person petter = new Person();
+        petter.setFirstName("petter");
+        petter.setSecondName("walt");
+        petter.setBornDate(new SimpleDateFormat("yyyy-MM-dd").parse("1990-03-28"));
+        template.insert(petter);
+
+        List<Person> list = provider.query("SELECT * ,dateFromString('2020-12-13', '%Y-%m-%d', '+08') AS registerAt FROM person ", Person.class);
+        Person person = list.get(0);
+        if (person.getRegisterAt() == null) {
+            throw new RuntimeException("test failed");
+        }
+        if (!new SimpleDateFormat("yyyy-MM-dd").format(person.getRegisterAt()).equals("2020-12-13")) {
+            throw new RuntimeException("test failed");
+        }
+
+        Query query = Query.query(Criteria.where("firstName").is("petter"));
+        template.remove(query, Person.COLLECTION);
+    }
+
+    @Test
+    public void dateToString() throws ParseException {
+        MongoTemplate template = mongoTemplate();
+        BaseMongoProvider provider = new BaseMongoProvider(template);
+
+        //Insert test data
+        Person petter = new Person();
+        petter.setFirstName("petter");
+        petter.setSecondName("walt");
+        petter.setBornDate(new SimpleDateFormat("yyyy-MM-dd").parse("1990-03-28"));
+        petter.setRegisterAt(new SimpleDateFormat("yyyy-MM-dd").parse("2021-02-21"));
+        template.insert(petter);
+
+        List<Map> list = provider.query("SELECT * ,dateToString(bornDate, '%Y-%m-%d', '+08') AS bd FROM person ", Map.class);
+        Map map = list.get(0);
+        if (!map.get("bd").equals("1990-03-28")) {
+            throw new RuntimeException("test failed");
+        }
+
+        Query query = Query.query(Criteria.where("firstName").is("petter"));
+        template.remove(query, Person.COLLECTION);
     }
 }

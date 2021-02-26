@@ -9,7 +9,8 @@ public class SimpleFunctionProvider implements FunctionProvider {
     private static final Map<String, Function> functionMap = new HashMap<>();
 
     static {
-        functionMap.put(DateToString.class.getSimpleName().toLowerCase(), new DateToString());
+        functionMap.put(DateToString.FUNC_NAME.toLowerCase(), new DateToString());
+        functionMap.put(DateFromString.FUNC_NAME.toLowerCase(), new DateFromString());
     }
 
     @Override
