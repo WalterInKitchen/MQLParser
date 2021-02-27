@@ -13,6 +13,9 @@ import org.walterinkitchen.parser.sqlParser.MySQLParser;
 import java.util.BitSet;
 import java.util.List;
 
+/**
+ * MongoProvider的基础实现
+ */
 public class BaseMongoProvider implements MongoProvider, ANTLRErrorListener {
 
     private final MongoTemplate mongoTemplate;
