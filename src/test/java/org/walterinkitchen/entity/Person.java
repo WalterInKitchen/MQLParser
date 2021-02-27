@@ -15,9 +15,20 @@ public class Person {
     private String id;
     private String firstName;
     private String secondName;
+    private int age;
+    private Title title;
     private String address;
     private String email;
     private Date bornDate;
     private String bornAt;
     private Date registerAt;
+    private Double salary;
+    private int bonusRate;
+    private Double income;
+
+    public enum Title {
+        BOSS,
+        SUPERVISOR,
+        ENGINEER;
+    }
 }

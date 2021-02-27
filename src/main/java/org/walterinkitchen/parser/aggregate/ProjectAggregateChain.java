@@ -8,8 +8,9 @@ import org.walterinkitchen.parser.stage.ProjectStage;
 
 import java.util.*;
 
-public class ProjectAggregateChain extends AbsAggregateChain
-        implements ExpressionVisitor<ProjectAggregateChain.Context, Object> {
+public class ProjectAggregateChain extends AbsAggregateChain {
+    private final BaseExpressionVisitor expressionVisitor = BaseExpressionVisitor.getInstance();
+
     protected ProjectAggregateChain(AbsAggregateChain next) {
         super(next);
     }
@@ -38,8 +39,9 @@ public class ProjectAggregateChain extends AbsAggregateChain
                 continue;
             }
             Expression expression = field.getExpression();
-            Context ctx = new Context();
-            Object expr = expression.accept(this, ctx);
+            ExprContext ctx = new ExprContext();
+            expression.accept(expressionVisitor, ctx);
+            Object expr = ctx.getOptQ().pop();
             if (field.getAlias() != null) {
                 project.put(field.getAlias(), expr);
                 continue;
@@ -53,18 +55,8 @@ public class ProjectAggregateChain extends AbsAggregateChain
         return project.isEmpty() ? Collections.emptyList() : Collections.singletonList(x -> new Document(finalKeyWord, project));
     }
 
-    @Override
-    public Object visit(FunctionCallExpression expression, Context context) {
-        return expression.explain();
-    }
-
-    @Override
-    public Object visit(FieldExpression expression, Context context) {
-        return "$" + expression.getField();
-    }
-
     protected class Context {
-        private final Deque<Object> deque = new LinkedList<>();
+        private final Deque<Object> optQ = new LinkedList<>();
         private String alias;
     }
 }
