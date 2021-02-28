@@ -843,7 +843,7 @@ SUBPARTITIONS_SYMBOL:            S U B P A R T I T I O N S;
 SUBPARTITION_SYMBOL:             S U B P A R T I T I O N;
 SUBSTR_SYMBOL:                   S U B S T R                                 { setType(determineFunction(SUBSTRING_SYMBOL)); }; // Synonym
 SUBSTRING_SYMBOL:                S U B S T R I N G                           { setType(determineFunction(SUBSTRING_SYMBOL)); }; // SQL-2003-N
-SUM_SYMBOL:                      S U M                                       { setType(determineFunction(SUM_SYMBOL)); }; // SQL-2003-N
+SUM_SYMBOL:                      S U M;
 SUPER_SYMBOL:                    S U P E R;
 SUSPEND_SYMBOL:                  S U S P E N D;
 SWAPS_SYMBOL:                    S W A P S;

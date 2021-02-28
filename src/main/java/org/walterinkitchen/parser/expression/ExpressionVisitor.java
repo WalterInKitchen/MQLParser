@@ -92,4 +92,16 @@ public interface ExpressionVisitor<C, T> {
     default T visit(FunctionCallExpression expression, C context) {
         return visitDefault(expression, context);
     }
+
+    default T visit(GroupByExpression expression, C context) {
+        return visitDefault(expression, context);
+    }
+
+    default T visit(AccumulatorExpression expression, C context) {
+        return visitDefault(expression, context);
+    }
+
+    default T visit(SumExpression expression, C context) {
+        return visitDefault(expression, context);
+    }
 }

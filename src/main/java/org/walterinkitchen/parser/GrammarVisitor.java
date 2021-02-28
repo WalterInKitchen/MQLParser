@@ -63,6 +63,13 @@ public class GrammarVisitor extends MySQLParserBaseVisitor<GrammarVisitor.Result
             stages.add(filterStage);
         }
 
+        //groupBy
+        if (ctx.groupByClause() != null) {
+            ctx.groupByClause().accept(this);
+            AbsStage groupByStage = (AbsStage) this.context.optQ.pop();
+            stages.add(groupByStage);
+        }
+
         //project
         ctx.selectItemList().accept(this);
         ProjectStage projectStage = (ProjectStage) this.context.optQ.pop();
@@ -144,32 +151,63 @@ public class GrammarVisitor extends MySQLParserBaseVisitor<GrammarVisitor.Result
     }
 
     @Override
-    public Result visitOrderList(MySQLParser.OrderListContext ctx) {
+    public Result visitOrderClause(MySQLParser.OrderClauseContext ctx) {
+        this.context.enterScope(Context.Scope.ORDER_BY);
         SortStage sortStage = new SortStage();
+        ctx.orderList().accept(this);
+        @SuppressWarnings("unchecked")
+        List<SortStage.Option> options = (List<SortStage.Option>) this.context.optQ.pop();
+        sortStage.setOptions(options);
+        this.context.optQ.push(sortStage);
+        this.context.exitScope();
+        return null;
+    }
+
+    @Override
+    public Result visitOrderList(MySQLParser.OrderListContext ctx) {
         List<MySQLParser.OrderExpressionContext> expressionContexts = ctx.orderExpression();
-        for (MySQLParser.OrderExpressionContext expr : expressionContexts) {
-            expr.accept(this);
-            SortStage.Option option = (SortStage.Option) this.context.optQ.pop();
-            sortStage.addOption(option);
+        switch (this.context.currentScope()) {
+            case GROUP_BY:
+                List<Expression> expressions = new ArrayList<>();
+                for (MySQLParser.OrderExpressionContext expr : expressionContexts) {
+                    expr.accept(this);
+                    Expression expression = (Expression) this.context.optQ.pop();
+                    expressions.add(expression);
+                }
+                this.context.optQ.push(expressions);
+                break;
+
+            case ORDER_BY:
+                List<SortStage.Option> options = new ArrayList<>();
+                for (MySQLParser.OrderExpressionContext expr : expressionContexts) {
+                    expr.accept(this);
+                    SortStage.Option option = (SortStage.Option) this.context.optQ.pop();
+                    options.add(option);
+                }
+                this.context.optQ.push(options);
+                break;
         }
 
-        this.context.optQ.push(sortStage);
         return null;
     }
 
     @Override
     public Result visitOrderExpression(MySQLParser.OrderExpressionContext ctx) {
-        Direction direction = Direction.ASC;
-
-        if (ctx.direction() != null) {
-            ctx.direction().accept(this);
-            direction = (Direction) this.context.optQ.pop();
+        if (this.context.currentScope() == Context.Scope.GROUP_BY) {
+            ctx.expr().accept(this);
+            Expression expression = (Expression) this.context.optQ.pop();
+            this.context.optQ.push(expression);
+        } else if (this.context.currentScope() == Context.Scope.ORDER_BY) {
+            Direction direction = Direction.ASC;
+            if (ctx.direction() != null) {
+                ctx.direction().accept(this);
+                direction = (Direction) this.context.optQ.pop();
+            }
+            ctx.expr().accept(this);
+            Expression expression = (Expression) this.context.optQ.pop();
+            SortStage.Option option = SortStage.Option.build(expression, direction);
+            this.context.optQ.push(option);
         }
-
-        ctx.expr().accept(this);
-        Expression expression = (Expression) this.context.optQ.pop();
-        SortStage.Option option = SortStage.Option.build(expression, direction);
-        this.context.optQ.push(option);
         return null;
     }
 
@@ -546,10 +584,56 @@ public class GrammarVisitor extends MySQLParserBaseVisitor<GrammarVisitor.Result
         return null;
     }
 
+    @Override
+    public Result visitGroupByClause(MySQLParser.GroupByClauseContext ctx) {
+        this.context.enterScope(Context.Scope.GROUP_BY);
+        ctx.orderList().accept(this);
+        @SuppressWarnings("unchecked")
+        List<Expression> expressions = (List<Expression>) this.context.optQ.pop();
+        GroupByExpression groupByExpression = GroupByExpression.build(expressions);
+        GroupStage stage = GroupStage.build(groupByExpression);
+        this.context.optQ.push(stage);
+        this.context.exitScope();
+        return null;
+    }
+
+    @Override
+    public Result visitSumExpr(MySQLParser.SumExprContext ctx) {
+        ctx.inSumExpr().accept(this);
+        Expression expression = (Expression) this.context.optQ.pop();
+        SumExpression sumExpression = SumExpression.build(expression);
+        this.context.optQ.push(sumExpression);
+        return null;
+    }
+
+    @Override
+    public Result visitInSumExpr(MySQLParser.InSumExprContext ctx) {
+        ctx.expr().accept(this);
+        return null;
+    }
+
     @Data
     private static class Context {
         private Deque<Object> optQ = new LinkedList<>();
         private FunctionProvider functionProvider = new SimpleFunctionProvider();
+        private Deque<Scope> scope = new LinkedList<>();
+
+        public Scope currentScope() {
+            return this.scope.peekLast();
+        }
+
+        public void enterScope(Scope scope) {
+            this.scope.push(scope);
+        }
+
+        public Scope exitScope() {
+            return this.scope.pop();
+        }
+
+        enum Scope {
+            GROUP_BY,
+            ORDER_BY
+        }
     }
 
     @Data

@@ -167,4 +167,51 @@ public class GrammarTest {
         }
         template.dropCollection(Person.class);
     }
+
+    @Test
+    public void groupByTest() {
+        MongoTemplate template = mongoTemplate();
+        BaseMongoProvider provider = new BaseMongoProvider(template);
+
+        //Insert test data
+        Person petter = new Person();
+        petter.setFirstName("petter");
+        petter.setSalary(15000.0);
+        petter.setBonusRate(10);
+        petter.setTitle(Person.Title.BOSS);
+        template.insert(petter);
+
+        Person jhon = new Person();
+        jhon.setFirstName("Jhon");
+        jhon.setSalary(30000.0);
+        jhon.setBonusRate(25);
+        jhon.setTitle(Person.Title.ENGINEER);
+        template.insert(jhon);
+
+        Person bob = new Person();
+        bob.setFirstName("Bob");
+        bob.setSalary(20000.0);
+        bob.setBonusRate(25);
+        bob.setTitle(Person.Title.ENGINEER);
+        template.insert(bob);
+
+
+        String ql = "SELECT title, SUM(salary) AS total from person WHERE salary > 0 GROUP BY title ORDER BY total";
+        List<Map> result = provider.query(ql, Map.class);
+        for (Map map : result) {
+            Double total = (Double) map.get("total");
+            if (Person.Title.BOSS.equals(map.get("title"))) {
+                if (total - 15000.0 != 0) {
+                    throw new RuntimeException("test failed");
+                }
+            }
+            if (Person.Title.ENGINEER.equals(map.get("title"))) {
+                if (total - 50000.0 != 0) {
+                    throw new RuntimeException("test failed");
+                }
+            }
+        }
+
+        template.dropCollection(Person.class);
+    }
 }

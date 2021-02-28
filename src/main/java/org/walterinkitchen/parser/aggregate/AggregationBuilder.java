@@ -19,7 +19,8 @@ public class AggregationBuilder {
         ProjectAggregateChain select = new ProjectAggregateChain(tail);
         LimitAggregateChain limit = new LimitAggregateChain(select);
         SortAggregateChain sort = new SortAggregateChain(limit);
-        MatchAggregateChain match = new MatchAggregateChain(sort);
+        GroupByAggregateChain group = new GroupByAggregateChain(sort);
+        MatchAggregateChain match = new MatchAggregateChain(group);
         FromAggregateChain from = new FromAggregateChain(match);
         AddIdAggregateChain id = new AddIdAggregateChain(from);
         return new AggregationBuilder(id);

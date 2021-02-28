@@ -204,6 +204,15 @@ class BaseExpressionVisitor implements org.walterinkitchen.parser.expression.Exp
         return null;
     }
 
+    @Override
+    public Void visit(SumExpression expression, ExprContext context) {
+        expression.getExpression().accept(this, context);
+        Object sumObj = context.getOptQ().pop();
+        Document sum = new Document("$sum", sumObj);
+        context.getOptQ().push(sum);
+        return null;
+    }
+
     static BaseExpressionVisitor getInstance() {
         if (instance == null) {
             synchronized (BaseExpressionVisitor.class) {

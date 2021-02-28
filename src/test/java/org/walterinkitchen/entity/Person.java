@@ -17,6 +17,7 @@ public class Person {
     private String secondName;
     private int age;
     private Title title;
+    private String city;
     private String address;
     private String email;
     private Date bornDate;

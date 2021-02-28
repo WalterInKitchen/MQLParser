@@ -2,7 +2,6 @@ package org.walterinkitchen.parser.aggregate;
 
 import lombok.Getter;
 import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
-import org.walterinkitchen.parser.expression.Expression;
 
 import java.util.ArrayList;
 import java.util.Deque;
@@ -15,5 +14,23 @@ class ExprContext {
 
     @Getter
     private final Deque<Object> optQ = new LinkedList<>();
-    private final Deque<Expression> fatherExpr = new LinkedList<>();
+
+    private final Deque<Scope> scopes = new LinkedList<>();
+
+    public Scope currentScope() {
+        return scopes.peekLast();
+    }
+
+    public void enterScope(Scope scope) {
+        this.scopes.push(scope);
+    }
+
+    public Scope exitScope() {
+        return this.scopes.pop();
+    }
+
+    public enum Scope {
+        GROUP_BY,
+        SELECT;
+    }
 }

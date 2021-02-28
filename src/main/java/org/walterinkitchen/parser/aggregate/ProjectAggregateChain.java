@@ -40,14 +40,16 @@ public class ProjectAggregateChain extends AbsAggregateChain {
             }
             Expression expression = field.getExpression();
             ExprContext ctx = new ExprContext();
+            ctx.enterScope(ExprContext.Scope.SELECT);
             expression.accept(expressionVisitor, ctx);
+            ctx.exitScope();
             Object expr = ctx.getOptQ().pop();
             if (field.getAlias() != null) {
                 project.put(field.getAlias(), expr);
                 continue;
             }
             if (mode == 1) {
-                project.put(String.valueOf(expr), 1);
+                project.put(ColumnNameProvider.obtainColumnName(expression), expr);
             }
         }
 
