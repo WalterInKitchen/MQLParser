@@ -1,0 +1,36 @@
+version: "3.8"
+services:
+  test-service-mongo:
+    image: mongo
+    container_name: test-mongo
+    networks:
+      - mongo-default
+    volumes:
+      - vol_test_mongo:/data/db
+      - ./.docker/mongodb/data/log/:/var/log/mongodb/
+      - ./.docker/mongodb/data/configdb/:/data/configdb/
+      - ./.docker/mongodb/check.sh:/home/check.sh
+    env_file:
+      - .env
+    environment:
+      # 容器名
+      MONGO_DB_HOST: test-mongo
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_DB_USR}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_DB_PWD}
+      MONGO_INITDB_DATABASE: ${MONGO_DB_DATABASE}
+      MONGO_REPLICA_SET_NAME: ${MONGO_REPLICA_SET_NAME}
+    ports:
+      - "27001:27017"
+    # 在这里初始化replicat set
+    healthcheck:
+      test: ["CMD", "bash", "/home/check.sh"]
+      interval: 10s
+      start_period: 30s
+    command: ["--replSet", "${MONGO_REPLICA_SET_NAME}", "--bind_ip_all"]
+    restart: always
+
+volumes:
+      vol_test_mongo:
+
+networks:
+  mongo-default:
