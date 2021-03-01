@@ -11,6 +11,7 @@ public class SimpleFunctionProvider implements FunctionProvider {
     static {
         functionMap.put(DateToString.FUNC_NAME.toLowerCase(), new DateToString());
         functionMap.put(DateFromString.FUNC_NAME.toLowerCase(), new DateFromString());
+        functionMap.put(Average.FUNC_NAME.toLowerCase(), new Average());
     }
 
     @Override

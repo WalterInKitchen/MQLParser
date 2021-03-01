@@ -169,7 +169,7 @@ public class GrammarTest {
     }
 
     @Test
-    public void groupByTest() {
+    public void groupBySumTest() {
         MongoTemplate template = mongoTemplate();
         BaseMongoProvider provider = new BaseMongoProvider(template);
 
@@ -200,13 +200,84 @@ public class GrammarTest {
         List<Map> result = provider.query(ql, Map.class);
         for (Map map : result) {
             Double total = (Double) map.get("total");
-            if (Person.Title.BOSS.equals(map.get("title"))) {
+            if ("BOSS".equals(map.get("title"))) {
                 if (total - 15000.0 != 0) {
                     throw new RuntimeException("test failed");
                 }
             }
-            if (Person.Title.ENGINEER.equals(map.get("title"))) {
+            if ("ENGINEER".equals(map.get("title"))) {
                 if (total - 50000.0 != 0) {
+                    throw new RuntimeException("test failed");
+                }
+            }
+        }
+
+        template.dropCollection(Person.class);
+    }
+
+    @Test
+    public void groupByMaxMinTest() {
+        MongoTemplate template = mongoTemplate();
+        BaseMongoProvider provider = new BaseMongoProvider(template);
+
+        //Insert test data
+        Person petter = new Person();
+        petter.setFirstName("petter");
+        petter.setSalary(15000.0);
+        petter.setBonusRate(10);
+        petter.setTitle(Person.Title.BOSS);
+        template.insert(petter);
+
+        Person walter = new Person();
+        walter.setFirstName("walter");
+        walter.setSalary(25000.0);
+        walter.setBonusRate(10);
+        walter.setTitle(Person.Title.BOSS);
+        template.insert(walter);
+
+        Person jhon = new Person();
+        jhon.setFirstName("Jhon");
+        jhon.setSalary(30000.0);
+        jhon.setBonusRate(25);
+        jhon.setTitle(Person.Title.ENGINEER);
+        template.insert(jhon);
+
+        Person bob = new Person();
+        bob.setFirstName("Bob");
+        bob.setSalary(20000.0);
+        bob.setBonusRate(25);
+        bob.setTitle(Person.Title.ENGINEER);
+        template.insert(bob);
+
+
+        String ql = "SELECT title, MAX(salary) AS 'max', " +
+                "MIN(salary) as 'min' ," +
+                "AVG(salary) as 'avg' " +
+                "from person WHERE salary > 0 GROUP BY title ORDER BY 'max'";
+        List<Map> result = provider.query(ql, Map.class);
+        for (Map map : result) {
+            Double max = (Double) map.get("max");
+            Double min = (Double) map.get("min");
+            Double avg = (Double) map.get("avg");
+            if (map.get("title").equals("BOSS")) {
+                if (max - 25000 != 0) {
+                    throw new RuntimeException("test failed");
+                }
+                if (min - 15000.0 != 0) {
+                    throw new RuntimeException("test failed");
+                }
+                if (avg - 20000.0 != 0) {
+                    throw new RuntimeException("test failed");
+                }
+            }
+            if (map.get("title").equals("ENGINEER")) {
+                if (max - 30000.0 != 0) {
+                    throw new RuntimeException("test failed");
+                }
+                if (min - 20000.0 != 0) {
+                    throw new RuntimeException("test failed");
+                }
+                if (avg - 25000.0 != 0) {
                     throw new RuntimeException("test failed");
                 }
             }

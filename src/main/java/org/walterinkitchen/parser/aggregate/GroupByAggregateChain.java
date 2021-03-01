@@ -3,6 +3,7 @@ package org.walterinkitchen.parser.aggregate;
 import org.bson.Document;
 import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
 import org.walterinkitchen.parser.expression.AccumulatorExpression;
+import org.walterinkitchen.parser.expression.ExprContext;
 import org.walterinkitchen.parser.expression.Expression;
 import org.walterinkitchen.parser.stage.AbsStage;
 import org.walterinkitchen.parser.stage.GroupStage;
@@ -24,28 +25,33 @@ public class GroupByAggregateChain extends AbsAggregateChain {
     Result handle(List<AbsStage> stages, Context context) {
         List<AggregationOperation> operations = new ArrayList<>();
 
-        //filter all project stage
-        List<AbsStage> stageList1 = new ArrayList<>();
-        ProjectStage projectStage = null;
+        List<AbsStage> remainStages = new ArrayList<>();
+        //filter and process all groupBy stages
+        List<GroupStage> groupStages = new ArrayList<>();
+        List<AbsStage> stages1 = new ArrayList<>();
         for (AbsStage stage : stages) {
-            if (!(stage instanceof ProjectStage)) {
-                stageList1.add(stage);
+            if (!(stage instanceof GroupStage)) {
+                stages1.add(stage);
+                continue;
+            }
+            groupStages.add((GroupStage) stage);
+        }
+
+        //filter all project stage
+        ProjectStage projectStage = null;
+        for (AbsStage stage : stages1) {
+            if (!(stage instanceof ProjectStage)
+                    || groupStages.isEmpty()) {
+                remainStages.add(stage);
                 continue;
             }
             projectStage = (ProjectStage) stage;
         }
-
-        //filter and process all groupBy stages
-        List<AbsStage> stageList2 = new ArrayList<>();
-        for (AbsStage stage : stageList1) {
-            if (!(stage instanceof GroupStage)) {
-                stageList2.add(stage);
-                continue;
-            }
-            operations.addAll(convertGroupStage((GroupStage) stage, projectStage, context));
+        for (GroupStage stage : groupStages) {
+            operations.addAll(convertGroupStage(stage, projectStage, context));
         }
 
-        return Result.build(operations, stageList2);
+        return Result.build(operations, remainStages);
     }
 
     private Collection<? extends AggregationOperation> convertGroupStage(GroupStage groupStage,
@@ -85,22 +91,26 @@ public class GroupByAggregateChain extends AbsAggregateChain {
 
         List<AggregationOperation> operations = new ArrayList<>();
         operations.add(x -> group);
-        HashMap<String, Object> pullUp = postGroup(groups);
-        operations.add(x -> new Document("$addFields", pullUp));
-        operations.add(x -> new Document("$project", new HashMap<String, Object>() {{
-            put("_id", 0);
-        }}));
+        operations.addAll(postGroup(groups));
 
         //map
         ctx.exitScope();
         return operations;
     }
 
-    private HashMap<String, Object> postGroup(Map<String, Object> groups) {
+    private Collection<? extends AggregationOperation> postGroup(Map<String, Object> groups) {
+        //pull field named _id.xxxx to top level
+        List<AggregationOperation> operations = new ArrayList<>();
         HashMap<String, Object> pullUp = new HashMap<>();
         for (String key : groups.keySet()) {
             pullUp.put(key, "$_id." + key);
         }
-        return pullUp;
+        operations.add(x -> new Document("$addFields", pullUp));
+
+        //hide _id field
+        operations.add(x -> new Document("$project", new HashMap<String, Object>() {{
+            put("_id", 0);
+        }}));
+        return operations;
     }
 }

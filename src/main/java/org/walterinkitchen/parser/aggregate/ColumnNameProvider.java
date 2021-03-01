@@ -1,9 +1,6 @@
 package org.walterinkitchen.parser.aggregate;
 
-import org.walterinkitchen.parser.expression.Expression;
-import org.walterinkitchen.parser.expression.ExpressionVisitor;
-import org.walterinkitchen.parser.expression.FieldExpression;
-import org.walterinkitchen.parser.expression.SumExpression;
+import org.walterinkitchen.parser.expression.*;
 
 /**
  * 得到表达式的列字符串
@@ -25,13 +22,18 @@ public class ColumnNameProvider {
         }
 
         @Override
-        public String visit(SumExpression expression, Void context) {
-            return "SUM";
+        public String visit(BaseAccumulatorExpression expression, Void context) {
+            return expression.getType().keyWord();
         }
 
         @Override
         public String visit(FieldExpression expression, Void context) {
             return expression.getField();
+        }
+
+        @Override
+        public String visit(StringLiteralExpression expression, Void context) {
+            return expression.getText();
         }
     }
 }

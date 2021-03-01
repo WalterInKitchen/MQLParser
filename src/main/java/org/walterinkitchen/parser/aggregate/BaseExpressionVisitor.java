@@ -6,7 +6,7 @@ import org.walterinkitchen.parser.expression.*;
 
 import java.util.*;
 
-class BaseExpressionVisitor implements org.walterinkitchen.parser.expression.ExpressionVisitor<ExprContext, Void> {
+public class BaseExpressionVisitor implements org.walterinkitchen.parser.expression.ExpressionVisitor<ExprContext, Void> {
     private static volatile BaseExpressionVisitor instance;
 
     private BaseExpressionVisitor() {
@@ -205,15 +205,27 @@ class BaseExpressionVisitor implements org.walterinkitchen.parser.expression.Exp
     }
 
     @Override
-    public Void visit(SumExpression expression, ExprContext context) {
-        expression.getExpression().accept(this, context);
-        Object sumObj = context.getOptQ().pop();
-        Document sum = new Document("$sum", sumObj);
-        context.getOptQ().push(sum);
+    public Void visit(BaseAccumulatorExpression expression, ExprContext context) {
+        String operation = "$" + expression.getType().keyWord();
+        if (context.currentScope() == ExprContext.Scope.GROUP_BY) {
+            expression.getExpressions().get(0).accept(this, context);
+            Object sumObj = context.getOptQ().pop();
+            Document sum = new Document(operation, sumObj);
+            context.getOptQ().push(sum);
+        } else {
+            List<Object> sums = new ArrayList<>();
+            for (Expression expr : expression.getExpressions()) {
+                expr.accept(this, context);
+                Object sumObj = context.getOptQ().pop();
+                sums.add(sumObj);
+            }
+            Document sum = new Document(operation, sums);
+            context.getOptQ().push(sum);
+        }
         return null;
     }
 
-    static BaseExpressionVisitor getInstance() {
+    public static BaseExpressionVisitor getInstance() {
         if (instance == null) {
             synchronized (BaseExpressionVisitor.class) {
                 if (instance == null) {

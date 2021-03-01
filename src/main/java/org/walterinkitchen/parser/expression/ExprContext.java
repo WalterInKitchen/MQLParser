@@ -1,4 +1,4 @@
-package org.walterinkitchen.parser.aggregate;
+package org.walterinkitchen.parser.expression;
 
 import lombok.Getter;
 import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
@@ -8,7 +8,7 @@ import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 
-class ExprContext {
+public class ExprContext {
     @Getter
     private final List<AggregationOperation> operations = new ArrayList<>();
 

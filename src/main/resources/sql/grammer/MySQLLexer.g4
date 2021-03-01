@@ -591,7 +591,7 @@ MAX_SIZE_SYMBOL:                 M A X '_' S I Z E;
 MAX_STATEMENT_TIME_SYMBOL:
     M A X '_' S T A T E M E N T '_' T I M E                                  {50704 < serverVersion && serverVersion < 50708}?
 ;
-MAX_SYMBOL:                      M A X                                       { setType(determineFunction(MAX_SYMBOL)); }; // SQL-2003-N
+MAX_SYMBOL:                      M A X;
 MAX_UPDATES_PER_HOUR_SYMBOL:     M A X '_' U P D A T E S '_' P E R '_' H O U R;
 MAX_USER_CONNECTIONS_SYMBOL:     M A X '_' U S E R '_' C O N N E C T I O N S;
 MAXVALUE_SYMBOL:                 M A X V A L U E;                            // SQL-2003-N
@@ -610,7 +610,7 @@ MINUTE_MICROSECOND_SYMBOL:       M I N U T E '_' M I C R O S E C O N D;
 MINUTE_SECOND_SYMBOL:            M I N U T E '_' S E C O N D;
 MINUTE_SYMBOL:                   M I N U T E;                                // SQL-2003-R
 MIN_ROWS_SYMBOL:                 M I N '_' R O W S;
-MIN_SYMBOL:                      M I N                                       { setType(determineFunction(MIN_SYMBOL)); }; // SQL-2003-N
+MIN_SYMBOL:                      M I N;
 MODE_SYMBOL:                     M O D E;
 MODIFIES_SYMBOL:                 M O D I F I E S;                            // SQL-2003-R
 MODIFY_SYMBOL:                   M O D I F Y;

@@ -3,7 +3,6 @@ package org.walterinkitchen.parser.aggregate;
 import org.bson.Document;
 import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
 import org.walterinkitchen.parser.expression.Expression;
-import org.walterinkitchen.parser.expression.FieldExpression;
 import org.walterinkitchen.parser.misc.Direction;
 import org.walterinkitchen.parser.stage.AbsStage;
 import org.walterinkitchen.parser.stage.SortStage;
@@ -43,6 +42,6 @@ public class SortAggregateChain extends AbsAggregateChain {
     }
 
     private String convertToFd(Expression expression, Context context) {
-        return ((FieldExpression) expression).getField();
+        return ColumnNameProvider.obtainColumnName(expression);
     }
 }

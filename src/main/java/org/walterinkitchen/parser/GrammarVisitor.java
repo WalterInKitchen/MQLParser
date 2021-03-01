@@ -569,6 +569,17 @@ public class GrammarVisitor extends MySQLParserBaseVisitor<GrammarVisitor.Result
             }
             Expression expression = function.call(expressions);
             this.context.optQ.push(expression);
+        } else if (ctx.qualifiedIdentifier() != null) {
+            String funcName = ctx.qualifiedIdentifier().getText();
+            ctx.exprList().accept(this);
+            @SuppressWarnings("unchecked")
+            List<Expression> expressions = ((ArrayExpression) this.context.optQ.pop()).getExpressions();
+            Function function = this.context.functionProvider.getFunctionByName(funcName);
+            if (function == null) {
+                throw new FunctionNotSupportedException(funcName);
+            }
+            Expression expression = function.call(expressions);
+            this.context.optQ.push(expression);
         }
         return null;
     }
@@ -599,10 +610,25 @@ public class GrammarVisitor extends MySQLParserBaseVisitor<GrammarVisitor.Result
 
     @Override
     public Result visitSumExpr(MySQLParser.SumExprContext ctx) {
+        BaseAccumulatorExpression.Type type = null;
+        switch (ctx.name.getType()) {
+            case MySQLLexer.SUM_SYMBOL:
+                type = BaseAccumulatorExpression.Type.SUM;
+                break;
+            case MySQLLexer.MAX_SYMBOL:
+                type = BaseAccumulatorExpression.Type.MAX;
+                break;
+            case MySQLLexer.MIN_SYMBOL:
+                type = BaseAccumulatorExpression.Type.MIN;
+                break;
+            case MySQLLexer.AVG_SYMBOL:
+                type = BaseAccumulatorExpression.Type.AVG;
+                break;
+        }
         ctx.inSumExpr().accept(this);
         Expression expression = (Expression) this.context.optQ.pop();
-        SumExpression sumExpression = SumExpression.build(expression);
-        this.context.optQ.push(sumExpression);
+        BaseAccumulatorExpression baseAccumulatorExpression = BaseAccumulatorExpression.build(type, expression);
+        this.context.optQ.push(baseAccumulatorExpression);
         return null;
     }
 
