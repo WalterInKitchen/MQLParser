@@ -360,4 +360,51 @@ public class GrammarTest {
 
         template.dropCollection(Person.class);
     }
+
+    @Test
+    public void stdDevPopSampTest() throws ParseException {
+        MongoTemplate template = mongoTemplate();
+        template.dropCollection(Person.class);
+
+        BaseMongoProvider provider = new BaseMongoProvider(template);
+
+        //Insert test data
+        Person petter = new Person();
+        petter.setFirstName("petter");
+        petter.setSalary(55000.0);
+        petter.setBonusRate(10);
+        petter.setBornDate(new SimpleDateFormat("yyyy-MM-dd").parse("1990-03-28"));
+        petter.setTitle(Person.Title.BOSS);
+        template.insert(petter);
+
+        Person walter = new Person();
+        walter.setFirstName("walter");
+        walter.setSalary(35000.0);
+        walter.setBonusRate(10);
+        walter.setBornDate(new SimpleDateFormat("yyyy-MM-dd").parse("1993-02-20"));
+        walter.setTitle(Person.Title.BOSS);
+        template.insert(walter);
+
+        Person jhon = new Person();
+        jhon.setFirstName("Jhon");
+        jhon.setSalary(30000.0);
+        jhon.setBonusRate(25);
+        jhon.setBornDate(new SimpleDateFormat("yyyy-MM-dd").parse("1988-01-18"));
+        jhon.setTitle(Person.Title.ENGINEER);
+        template.insert(jhon);
+
+        Person bob = new Person();
+        bob.setFirstName("Bob");
+        bob.setSalary(20000.0);
+        bob.setBonusRate(25);
+        bob.setBornDate(new SimpleDateFormat("yyyy-MM-dd").parse("1999-11-12"));
+        bob.setTitle(Person.Title.ENGINEER);
+        template.insert(bob);
+
+        String ql = "SELECT sum(1) AS 'count', stdDevPop(salary) AS 'stdSalary' , stdDevSamp(salary) AS 'sapSalary' FROM person GROUP BY title ORDER BY bornDate ASC";
+        List<Map> result = provider.query(ql, Map.class);
+
+
+        template.dropCollection(Person.class);
+    }
 }

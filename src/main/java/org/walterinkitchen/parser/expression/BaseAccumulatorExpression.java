@@ -33,6 +33,18 @@ public class BaseAccumulatorExpression extends AccumulatorExpression {
             public String keyWord() {
                 return "min";
             }
+        },
+        STD_DEV_POP() {
+            @Override
+            public String keyWord() {
+                return "stdDevPop";
+            }
+        },
+        STD_DEV_SAMP() {
+            @Override
+            public String keyWord() {
+                return "stdDevSamp";
+            }
         };
 
         public abstract String keyWord();

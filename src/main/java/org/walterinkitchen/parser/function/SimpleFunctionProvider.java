@@ -14,6 +14,8 @@ public class SimpleFunctionProvider implements FunctionProvider {
         functionMap.put(Average.FUNC_NAME.toLowerCase(), new Average());
         functionMap.put(First.FUNC_NAME.toLowerCase(), new First());
         functionMap.put(Last.FUNC_NAME.toLowerCase(), new Last());
+        functionMap.put(StdDevPop.FUNC_NAME.toLowerCase(), new StdDevPop());
+        functionMap.put(StdDevSamp.FUNC_NAME.toLowerCase(), new StdDevSamp());
     }
 
     @Override
