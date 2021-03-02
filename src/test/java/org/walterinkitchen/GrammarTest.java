@@ -285,4 +285,79 @@ public class GrammarTest {
 
         template.dropCollection(Person.class);
     }
+
+    @Test
+    public void firstLastTest() throws ParseException {
+        MongoTemplate template = mongoTemplate();
+        template.dropCollection(Person.class);
+
+        BaseMongoProvider provider = new BaseMongoProvider(template);
+
+        //Insert test data
+        Person petter = new Person();
+        petter.setFirstName("petter");
+        petter.setSalary(15000.0);
+        petter.setBonusRate(10);
+        petter.setBornDate(new SimpleDateFormat("yyyy-MM-dd").parse("1990-03-28"));
+        petter.setTitle(Person.Title.BOSS);
+        template.insert(petter);
+
+        Person walter = new Person();
+        walter.setFirstName("walter");
+        walter.setSalary(25000.0);
+        walter.setBonusRate(10);
+        walter.setBornDate(new SimpleDateFormat("yyyy-MM-dd").parse("1993-02-20"));
+        walter.setTitle(Person.Title.BOSS);
+        template.insert(walter);
+
+        Person jhon = new Person();
+        jhon.setFirstName("Jhon");
+        jhon.setSalary(30000.0);
+        jhon.setBonusRate(25);
+        jhon.setBornDate(new SimpleDateFormat("yyyy-MM-dd").parse("1988-01-18"));
+        jhon.setTitle(Person.Title.ENGINEER);
+        template.insert(jhon);
+
+        Person bob = new Person();
+        bob.setFirstName("Bob");
+        bob.setSalary(20000.0);
+        bob.setBonusRate(25);
+        bob.setBornDate(new SimpleDateFormat("yyyy-MM-dd").parse("1999-11-12"));
+        bob.setTitle(Person.Title.ENGINEER);
+        template.insert(bob);
+
+        String ql = "SELECT first(firstName) AS name, first(bornDate) as born FROM person GROUP BY title ORDER BY bornDate ASC";
+        List<Map> result = provider.query(ql, Map.class);
+        for (Map map : result) {
+            Object title = map.get("title");
+            String nameInDb = (String) map.get("name");
+            String name = null;
+            if (title.equals("BOSS")) {
+                name = "petter";
+            } else if (title.equals("ENGINEER")) {
+                name = "Jhon";
+            }
+            if (!nameInDb.equals(name)) {
+                throw new RuntimeException("test failed");
+            }
+        }
+
+        ql = "SELECT last(firstName) AS name, last(bornDate) as born FROM person GROUP BY title ORDER BY bornDate ASC";
+        result = provider.query(ql, Map.class);
+        for (Map map : result) {
+            Object title = map.get("title");
+            String nameInDb = (String) map.get("name");
+            String name = null;
+            if (title.equals("BOSS")) {
+                name = "walter";
+            } else if (title.equals("ENGINEER")) {
+                name = "Bob";
+            }
+            if (!nameInDb.equals(name)) {
+                throw new RuntimeException("test failed");
+            }
+        }
+
+        template.dropCollection(Person.class);
+    }
 }

@@ -1,7 +1,7 @@
 version: "3.8"
 services:
   test-service-mongo:
-    image: mongo
+    image: mongo:4.4.3
     container_name: test-mongo
     networks:
       - mongo-default

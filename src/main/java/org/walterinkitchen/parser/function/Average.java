@@ -1,10 +1,10 @@
 package org.walterinkitchen.parser.function;
 
+import lombok.NonNull;
 import org.walterinkitchen.parser.aggregate.BaseExpressionVisitor;
 import org.walterinkitchen.parser.expression.BaseAccumulatorExpression;
 import org.walterinkitchen.parser.expression.Expression;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class Average implements Function {
@@ -12,8 +12,7 @@ public class Average implements Function {
     private final BaseExpressionVisitor expressionVisitor = BaseExpressionVisitor.getInstance();
 
     @Override
-    public Expression call(List<Expression> args) {
-        List<Object> exprs = new ArrayList<>();
+    public Expression call(@NonNull List<Expression> args) {
         return BaseAccumulatorExpression.build(BaseAccumulatorExpression.Type.AVG, args);
     }
 }
