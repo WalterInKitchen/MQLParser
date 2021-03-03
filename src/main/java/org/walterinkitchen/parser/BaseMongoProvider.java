@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.walterinkitchen.parser.aggregate.AggregationBuilder;
+import org.walterinkitchen.parser.sqlParser.BaseGrammarVisitor;
 import org.walterinkitchen.parser.sqlParser.MySQLLexer;
 import org.walterinkitchen.parser.sqlParser.MySQLParser;
 
@@ -35,8 +36,8 @@ public class BaseMongoProvider implements MongoProvider, ANTLRErrorListener {
         parser.addErrorListener(this);
         MySQLParser.QueryExpressionContext query = parser.queryExpression();
 
-        GrammarVisitor visitor = new GrammarVisitor();
-        GrammarVisitor.Result result = query.accept(visitor);
+        BaseGrammarVisitor visitor = new BaseGrammarVisitor();
+        BaseGrammarVisitor.Result result = query.accept(visitor);
 
         AggregationBuilder.Result ares = aggregationBuilder.buildAggregation(result.getStages());
         AggregationResults<T> aggregationResults = mongoTemplate.aggregate(Aggregation.newAggregation(ares.getOperations()), ares.getCollection(), outputType);

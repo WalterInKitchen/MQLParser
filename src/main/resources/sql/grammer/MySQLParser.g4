@@ -1025,8 +1025,6 @@ queryExpressionParens:
 
 queryPrimary:
     querySpecification
-    | {serverVersion >= 80019}? tableValueConstructor
-    | {serverVersion >= 80019}? explicitTable
 ;
 
 querySpecification:
@@ -1197,9 +1195,6 @@ rowValueExplicit:
 
 selectOption:
     querySpecOption
-    | SQL_NO_CACHE_SYMBOL // Deprecated and ignored in 8.0.
-    | {serverVersion < 80000}? SQL_CACHE_SYMBOL
-    | {serverVersion >= 50704 && serverVersion < 50708}? MAX_STATEMENT_TIME_SYMBOL EQUAL_OPERATOR real_ulong_number
 ;
 
 lockingClauseList:

@@ -1,7 +1,8 @@
-package org.walterinkitchen.parser;
+package org.walterinkitchen.parser.sqlParser;
 
 import lombok.Data;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.TerminalNodeImpl;
 import org.walterinkitchen.parser.exception.FunctionNotSupportedException;
 import org.walterinkitchen.parser.exception.LimitClauseInvalidException;
 import org.walterinkitchen.parser.expression.*;
@@ -9,16 +10,19 @@ import org.walterinkitchen.parser.function.Function;
 import org.walterinkitchen.parser.function.FunctionProvider;
 import org.walterinkitchen.parser.function.SimpleFunctionProvider;
 import org.walterinkitchen.parser.misc.Direction;
-import org.walterinkitchen.parser.sqlParser.MySQLLexer;
-import org.walterinkitchen.parser.sqlParser.MySQLParser;
-import org.walterinkitchen.parser.sqlParser.MySQLParserBaseVisitor;
 import org.walterinkitchen.parser.stage.*;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
 
-public class GrammarVisitor extends MySQLParserBaseVisitor<GrammarVisitor.Result> {
+public class BaseGrammarVisitor extends MySQLParserBaseVisitor<BaseGrammarVisitor.Result> {
     private final Context context = new Context();
+
+    private enum SelectOption {
+        ALL,
+        DISTINCT;
+    }
 
     @Override
     public Result visitQueryExpression(MySQLParser.QueryExpressionContext ctx) {
@@ -70,12 +74,35 @@ public class GrammarVisitor extends MySQLParserBaseVisitor<GrammarVisitor.Result
             stages.add(groupByStage);
         }
 
+        //option
+        if (!ctx.selectOption().isEmpty()) {
+            Set<SelectOption> options = new HashSet<>();
+            for (MySQLParser.SelectOptionContext option : ctx.selectOption()) {
+                option.accept(this);
+                options.add((SelectOption) this.context.optQ.pop());
+            }
+            this.context.optQ.push(options);
+        }
         //project
         ctx.selectItemList().accept(this);
-        ProjectStage projectStage = (ProjectStage) this.context.optQ.pop();
+        AbsStage projectStage = (AbsStage) this.context.optQ.pop();
         stages.add(projectStage);
 
         this.context.optQ.push(stages);
+        return null;
+    }
+
+    @Override
+    public Result visitQuerySpecOption(MySQLParser.QuerySpecOptionContext ctx) {
+        int type = ((TerminalNodeImpl) ctx.children.get(0)).getSymbol().getType();
+        switch (type) {
+            case MySQLLexer.DISTINCT_SYMBOL:
+                this.context.optQ.push(SelectOption.DISTINCT);
+                break;
+            case MySQLLexer.ALL_SYMBOL:
+                this.context.optQ.push(SelectOption.ALL);
+                break;
+        }
         return null;
     }
 
@@ -95,17 +122,28 @@ public class GrammarVisitor extends MySQLParserBaseVisitor<GrammarVisitor.Result
 
     @Override
     public Result visitSelectItemList(MySQLParser.SelectItemListContext ctx) {
-        List<ProjectStage.Field> fields = new ArrayList<>();
+        @SuppressWarnings("unchecked")
+        Set<SelectOption> options = this.context.optQ.isEmpty() ?
+                Collections.emptySet() : (Set<SelectOption>) this.context.optQ.pop();
 
+        List<ProjectStage.Field> fields = new ArrayList<>();
         if (ctx.MULT_OPERATOR() != null) {
             fields.add(new ProjectStage.Field(new AllElementExpression(), null));
         }
-
         List<MySQLParser.SelectItemContext> itemsCtx = ctx.selectItem();
         for (MySQLParser.SelectItemContext itemContext : itemsCtx) {
             itemContext.accept(this);
             ProjectStage.Field fd = (ProjectStage.Field) this.context.optQ.pop();
             fields.add(fd);
+        }
+
+        //select -> group
+        if (options.contains(SelectOption.DISTINCT)) {
+            GroupByExpression groupByExpression = GroupByExpression
+                    .build(fields.stream().map(ProjectStage.Field::getExpression).collect(Collectors.toList()));
+            GroupStage groupStage = GroupStage.build(groupByExpression);
+            this.context.optQ.push(groupStage);
+            return null;
         }
 
         ProjectStage stage = ProjectStage.build(fields);

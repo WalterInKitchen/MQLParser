@@ -69,18 +69,20 @@ public class GroupByAggregateChain extends AbsAggregateChain {
 
         //build accumulators
         Map<String, Object> accumulators = new HashMap<>();
-        List<ProjectStage.Field> fields = projectStage.getFields();
-        for (ProjectStage.Field field : fields) {
-            if (!(field.getExpression() instanceof AccumulatorExpression)) {
-                continue;
+        if (projectStage != null) {
+            List<ProjectStage.Field> fields = projectStage.getFields();
+            for (ProjectStage.Field field : fields) {
+                if (!(field.getExpression() instanceof AccumulatorExpression)) {
+                    continue;
+                }
+                field.getExpression().accept(expressionVisitor, ctx);
+                Object accu = ctx.getOptQ().pop();
+                if (field.getAlias() != null) {
+                    accumulators.put(field.getAlias(), accu);
+                    continue;
+                }
+                accumulators.put(ColumnNameProvider.obtainColumnName(field.getExpression()), accu);
             }
-            field.getExpression().accept(expressionVisitor, ctx);
-            Object accu = ctx.getOptQ().pop();
-            if (field.getAlias() != null) {
-                accumulators.put(field.getAlias(), accu);
-                continue;
-            }
-            accumulators.put(ColumnNameProvider.obtainColumnName(field.getExpression()), accu);
         }
 
         //construct project pipeline
