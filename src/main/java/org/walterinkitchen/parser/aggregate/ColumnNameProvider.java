@@ -22,6 +22,16 @@ public class ColumnNameProvider {
         }
 
         @Override
+        public String visit(FirstLastExpression expression, Void context) {
+            return expression.getType().keyWord();
+        }
+
+        @Override
+        public String visit(ArithmeticExpression expression, Void context) {
+            return expression.getOperator().name();
+        }
+
+        @Override
         public String visit(BaseAccumulatorExpression expression, Void context) {
             return expression.getType().keyWord();
         }
