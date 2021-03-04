@@ -454,6 +454,23 @@ public class GrammarTest {
 
         String ql = "SELECT DISTINCT title FROM person";
         List<Map> result = provider.query(ql, Map.class);
+        for (Map map : result) {
+            Object title = map.get("title");
+            if ("BOSS".equals(title) || "ENGINEER".equals(title)) {
+                continue;
+            }
+            throw new RuntimeException("test failed");
+        }
+
+        ql = "SELECT DISTINCT title AS 'tt',city FROM person;";
+        result = provider.query(ql, Map.class);
+        for (Map map : result) {
+            Object title = map.get("tt");
+            if ("BOSS".equals(title) || "ENGINEER".equals(title)) {
+                continue;
+            }
+            throw new RuntimeException("test failed");
+        }
 
         template.dropCollection(Person.class);
     }

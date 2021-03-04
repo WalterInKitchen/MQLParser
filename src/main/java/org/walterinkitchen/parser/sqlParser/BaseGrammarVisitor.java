@@ -140,7 +140,9 @@ public class BaseGrammarVisitor extends MySQLParserBaseVisitor<BaseGrammarVisito
         //select -> group
         if (options.contains(SelectOption.DISTINCT)) {
             GroupByExpression groupByExpression = GroupByExpression
-                    .build(fields.stream().map(ProjectStage.Field::getExpression).collect(Collectors.toList()));
+                    .buildByExprs(fields.stream()
+                            .map(x -> new GroupByExpression.Expr(x.getExpression(), x.getAlias()))
+                            .collect(Collectors.toList()));
             GroupStage groupStage = GroupStage.build(groupByExpression);
             this.context.optQ.push(groupStage);
             return null;

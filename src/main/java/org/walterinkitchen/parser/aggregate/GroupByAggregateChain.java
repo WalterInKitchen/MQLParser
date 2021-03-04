@@ -2,9 +2,11 @@ package org.walterinkitchen.parser.aggregate;
 
 import org.bson.Document;
 import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
+import org.springframework.util.StringUtils;
 import org.walterinkitchen.parser.expression.AccumulatorExpression;
 import org.walterinkitchen.parser.expression.ExprContext;
 import org.walterinkitchen.parser.expression.Expression;
+import org.walterinkitchen.parser.expression.GroupByExpression;
 import org.walterinkitchen.parser.stage.AbsStage;
 import org.walterinkitchen.parser.stage.GroupStage;
 import org.walterinkitchen.parser.stage.ProjectStage;
@@ -61,10 +63,15 @@ public class GroupByAggregateChain extends AbsAggregateChain {
         ExprContext ctx = new ExprContext();
         ctx.enterScope(ExprContext.Scope.GROUP_BY);
         Map<String, Object> groups = new HashMap<>();
-        for (Expression expr : groupStage.getExpression().getExpressions()) {
-            expr.accept(expressionVisitor, ctx);
+        for (GroupByExpression.Expr expr : groupStage.getExpression().getExpressions()) {
+            Expression expression = expr.getExpression();
+            expression.accept(expressionVisitor, ctx);
             Object obj = ctx.getOptQ().pop();
-            groups.put(ColumnNameProvider.obtainColumnName(expr), obj);
+            String colName = expr.getAlias();
+            if (StringUtils.isEmpty(colName)) {
+                colName = ColumnNameProvider.obtainColumnName(expression);
+            }
+            groups.put(colName, obj);
         }
 
         //build accumulators

@@ -1,10 +1,9 @@
 package org.walterinkitchen.parser.expression;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 分组表达式
@@ -14,7 +13,7 @@ public class GroupByExpression implements Expression {
 
     @Getter
     @Setter(AccessLevel.PROTECTED)
-    private List<Expression> expressions;
+    private List<Expr> expressions;
 
     private GroupByExpression() {
     }
@@ -24,9 +23,22 @@ public class GroupByExpression implements Expression {
         return visitor.visit(this, context);
     }
 
-    public static GroupByExpression build(List<Expression> expressions) {
+    public static GroupByExpression build(@NonNull List<Expression> expressions) {
+        GroupByExpression expression = new GroupByExpression();
+        expression.setExpressions(expressions.stream().map(x -> new Expr(x, null)).collect(Collectors.toList()));
+        return expression;
+    }
+
+    public static GroupByExpression buildByExprs(@NonNull List<Expr> expressions) {
         GroupByExpression expression = new GroupByExpression();
         expression.setExpressions(expressions);
         return expression;
+    }
+
+    @AllArgsConstructor
+    @Getter
+    public static class Expr {
+        private final Expression expression;
+        private final String alias;
     }
 }
