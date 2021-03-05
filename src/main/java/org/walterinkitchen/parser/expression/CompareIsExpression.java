@@ -21,6 +21,11 @@ public class CompareIsExpression extends CompareExpression {
     @Setter(AccessLevel.PRIVATE)
     private Type type;
 
+    @Override
+    public <C, T> T accept(ExpressionVisitor<C, T> visitor, C context) {
+        return visitor.visit(this, context);
+    }
+
     public static CompareIsExpression build(Expression expression, Type type) {
         CompareIsExpression is = new CompareIsExpression();
         is.setType(type);

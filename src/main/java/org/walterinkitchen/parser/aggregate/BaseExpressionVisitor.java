@@ -82,6 +82,28 @@ public class BaseExpressionVisitor implements org.walterinkitchen.parser.express
     }
 
     @Override
+    public Void visit(CompareIsExpression expression, ExprContext context) {
+        expression.getExpression().accept(this, context);
+        Object expr = context.getOptQ().pop();
+        Document doc = null;
+        switch (expression.getType()) {
+            case NULL:
+                doc = new Document("$lt", Arrays.asList(expr, null));
+                break;
+            case TRUE:
+                doc = new Document("$eq", Arrays.asList(expr, true));
+                break;
+            case FALSE:
+                doc = new Document("$eq", Arrays.asList(expr, false));
+                break;
+            case UNKNOWN:
+                break;
+        }
+        context.getOptQ().push(doc);
+        return null;
+    }
+
+    @Override
     public Void visit(XorExpression expression, ExprContext context) {
         List<Object> subExprs = new ArrayList<>();
         for (Expression expr : expression.getExpressions()) {
