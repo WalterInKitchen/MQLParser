@@ -559,6 +559,7 @@ public class GrammarTest {
         jhon.setCity("Shanghai");
         jhon.setBornDate(new SimpleDateFormat("yyyy-MM-dd").parse("1988-01-18"));
         jhon.setTitle(Person.Title.ENGINEER);
+        jhon.setAdvance(false);
         template.insert(jhon);
 
         Person bob = new Person();
@@ -569,10 +570,40 @@ public class GrammarTest {
         bob.setBonusRate(25);
         bob.setBornDate(new SimpleDateFormat("yyyy-MM-dd").parse("1999-11-12"));
         bob.setTitle(Person.Title.ENGINEER);
+        bob.setAdvance(true);
         template.insert(bob);
 
         String ql = "SELECT * FROM person WHERE secondName IS NULL ";
-        List<Map> result = provider.query(ql, Map.class);
+        List<Person> result = provider.query(ql, Person.class);
+        for (Person person : result) {
+            if (person.getSecondName() != null) {
+                throw new RuntimeException("test failed");
+            }
+        }
+
+        ql = "SELECT * FROM person WHERE secondName IS NOT NULL ";
+        result = provider.query(ql, Person.class);
+        for (Person person : result) {
+            if (person.getSecondName() == null) {
+                throw new RuntimeException("test failed");
+            }
+        }
+
+        ql = "SELECT * FROM person WHERE advance IS TRUE ";
+        result = provider.query(ql, Person.class);
+        for (Person person : result) {
+            if (!person.getAdvance()) {
+                throw new RuntimeException("test failed");
+            }
+        }
+
+        ql = "SELECT * FROM person WHERE advance IS FALSE";
+        result = provider.query(ql, Person.class);
+        for (Person person : result) {
+            if (person.getAdvance()) {
+                throw new RuntimeException("test failed");
+            }
+        }
 
         template.dropCollection(Person.class);
     }

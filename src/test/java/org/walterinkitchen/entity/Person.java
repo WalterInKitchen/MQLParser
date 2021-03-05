@@ -26,6 +26,7 @@ public class Person {
     private Double salary;
     private int bonusRate;
     private Double income;
+    private Boolean advance;
 
     public enum Title {
         BOSS,
