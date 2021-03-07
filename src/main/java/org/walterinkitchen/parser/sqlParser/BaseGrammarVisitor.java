@@ -56,22 +56,28 @@ public class BaseGrammarVisitor extends MySQLParserBaseVisitor<BaseGrammarVisito
         //from
         if (ctx.fromClause() != null) {
             ctx.fromClause().accept(this);
-            AbsStage fromStage = (AbsStage) this.context.optQ.pop();
-            stages.add(fromStage);
+            while (!this.context.optQ.isEmpty()) {
+                AbsStage fromStage = (AbsStage) this.context.optQ.pop();
+                stages.add(fromStage);
+            }
         }
 
         //filter
         if (ctx.whereClause() != null) {
             ctx.whereClause().accept(this);
-            AbsStage filterStage = (AbsStage) this.context.optQ.pop();
-            stages.add(filterStage);
+            while (!this.context.optQ.isEmpty()) {
+                AbsStage filterStage = (AbsStage) this.context.optQ.pop();
+                stages.add(filterStage);
+            }
         }
 
         //groupBy
         if (ctx.groupByClause() != null) {
             ctx.groupByClause().accept(this);
-            AbsStage groupByStage = (AbsStage) this.context.optQ.pop();
-            stages.add(groupByStage);
+            while (!this.context.optQ.isEmpty()) {
+                AbsStage groupByStage = (AbsStage) this.context.optQ.pop();
+                stages.add(groupByStage);
+            }
         }
 
         //option
@@ -85,8 +91,10 @@ public class BaseGrammarVisitor extends MySQLParserBaseVisitor<BaseGrammarVisito
         }
         //project
         ctx.selectItemList().accept(this);
-        AbsStage projectStage = (AbsStage) this.context.optQ.pop();
-        stages.add(projectStage);
+        while (!this.context.optQ.isEmpty()) {
+            AbsStage projectStage = (AbsStage) this.context.optQ.pop();
+            stages.add(projectStage);
+        }
 
         this.context.optQ.push(stages);
         return null;
@@ -122,6 +130,26 @@ public class BaseGrammarVisitor extends MySQLParserBaseVisitor<BaseGrammarVisito
 
     @Override
     public Result visitSelectItemList(MySQLParser.SelectItemListContext ctx) {
+        Context.Stage stage = new SelectOrCountStageDecider().decide(ctx);
+
+        //COUNT stage
+        if (stage == Context.Stage.COUNT) {
+            this.context.enterScope(Context.Stage.COUNT);
+            List<CountExpression> countExpressions = new ArrayList<>();
+            for (MySQLParser.SelectItemContext itemContext : ctx.selectItem()) {
+                itemContext.accept(this);
+                if (this.context.optQ.isEmpty()) {
+                    continue;
+                }
+                countExpressions.add((CountExpression) this.context.optQ.pop());
+            }
+            CountStage countStage = CountStage.build(countExpressions);
+            this.context.optQ.push(countStage);
+            this.context.exitScope();
+            return null;
+        }
+
+        this.context.enterScope(Context.Stage.SELECT);
         @SuppressWarnings("unchecked")
         Set<SelectOption> options = this.context.optQ.isEmpty() ?
                 Collections.emptySet() : (Set<SelectOption>) this.context.optQ.pop();
@@ -145,11 +173,11 @@ public class BaseGrammarVisitor extends MySQLParserBaseVisitor<BaseGrammarVisito
                             .collect(Collectors.toList()));
             GroupStage groupStage = GroupStage.build(groupByExpression);
             this.context.optQ.push(groupStage);
-            return null;
+        } else {
+            ProjectStage projectStage = ProjectStage.build(fields);
+            this.context.optQ.push(projectStage);
         }
-
-        ProjectStage stage = ProjectStage.build(fields);
-        this.context.optQ.push(stage);
+        this.context.exitScope();
         return null;
     }
 
@@ -162,7 +190,15 @@ public class BaseGrammarVisitor extends MySQLParserBaseVisitor<BaseGrammarVisito
             ctx.selectAlias().accept(this);
             Object alObj = this.context.optQ.pop();
             alias = ((StringLiteralExpression) alObj).getText();
+
         }
+        //count
+        if (this.context.currentScope() == Context.Stage.COUNT) {
+            CountExpression count = CountExpression.build(alias);
+            this.context.optQ.push(count);
+            return null;
+        }
+
         ProjectStage.Field field = new ProjectStage.Field(expression, alias);
         this.context.optQ.push(field);
         return null;
@@ -192,7 +228,7 @@ public class BaseGrammarVisitor extends MySQLParserBaseVisitor<BaseGrammarVisito
 
     @Override
     public Result visitOrderClause(MySQLParser.OrderClauseContext ctx) {
-        this.context.enterScope(Context.Scope.ORDER_BY);
+        this.context.enterScope(Context.Stage.ORDER_BY);
         SortStage sortStage = new SortStage();
         ctx.orderList().accept(this);
         @SuppressWarnings("unchecked")
@@ -233,11 +269,11 @@ public class BaseGrammarVisitor extends MySQLParserBaseVisitor<BaseGrammarVisito
 
     @Override
     public Result visitOrderExpression(MySQLParser.OrderExpressionContext ctx) {
-        if (this.context.currentScope() == Context.Scope.GROUP_BY) {
+        if (this.context.currentScope() == Context.Stage.GROUP_BY) {
             ctx.expr().accept(this);
             Expression expression = (Expression) this.context.optQ.pop();
             this.context.optQ.push(expression);
-        } else if (this.context.currentScope() == Context.Scope.ORDER_BY) {
+        } else if (this.context.currentScope() == Context.Stage.ORDER_BY) {
             Direction direction = Direction.ASC;
             if (ctx.direction() != null) {
                 ctx.direction().accept(this);
@@ -637,7 +673,7 @@ public class BaseGrammarVisitor extends MySQLParserBaseVisitor<BaseGrammarVisito
 
     @Override
     public Result visitGroupByClause(MySQLParser.GroupByClauseContext ctx) {
-        this.context.enterScope(Context.Scope.GROUP_BY);
+        this.context.enterScope(Context.Stage.GROUP_BY);
         ctx.orderList().accept(this);
         @SuppressWarnings("unchecked")
         List<Expression> expressions = (List<Expression>) this.context.optQ.pop();
@@ -665,8 +701,13 @@ public class BaseGrammarVisitor extends MySQLParserBaseVisitor<BaseGrammarVisito
                 type = BaseAccumulatorExpression.Type.AVG;
                 break;
         }
-        ctx.inSumExpr().accept(this);
-        Expression expression = (Expression) this.context.optQ.pop();
+        Expression expression = null;
+        if (ctx.inSumExpr() != null) {
+            ctx.inSumExpr().accept(this);
+            expression = (Expression) this.context.optQ.pop();
+        } else if (ctx.MULT_OPERATOR() != null) {
+            expression = new AllElementExpression();
+        }
         BaseAccumulatorExpression baseAccumulatorExpression = BaseAccumulatorExpression.build(type, expression);
         this.context.optQ.push(baseAccumulatorExpression);
         return null;
@@ -682,21 +723,23 @@ public class BaseGrammarVisitor extends MySQLParserBaseVisitor<BaseGrammarVisito
     private static class Context {
         private Deque<Object> optQ = new LinkedList<>();
         private FunctionProvider functionProvider = new SimpleFunctionProvider();
-        private Deque<Scope> scope = new LinkedList<>();
+        private Deque<Stage> stage = new LinkedList<>();
 
-        public Scope currentScope() {
-            return this.scope.peekLast();
+        public Stage currentScope() {
+            return this.stage.peekLast();
         }
 
-        public void enterScope(Scope scope) {
-            this.scope.push(scope);
+        public void enterScope(Stage stage) {
+            this.stage.push(stage);
         }
 
-        public Scope exitScope() {
-            return this.scope.pop();
+        public Stage exitScope() {
+            return this.stage.pop();
         }
 
-        enum Scope {
+        enum Stage {
+            COUNT,
+            SELECT,
             GROUP_BY,
             ORDER_BY
         }
@@ -710,6 +753,30 @@ public class BaseGrammarVisitor extends MySQLParserBaseVisitor<BaseGrammarVisito
             Result result = new Result();
             result.setStages(stages);
             return result;
+        }
+    }
+
+    /**
+     * 判断SELECT语句构造那种管道
+     */
+    protected static class SelectOrCountStageDecider extends MySQLParserBaseVisitor<Void> {
+        private final Context context = new Context();
+
+        public Context.Stage decide(MySQLParser.SelectItemListContext ctx) {
+            ctx.accept(this);
+            if (this.context.optQ.isEmpty()) {
+                return Context.Stage.SELECT;
+            }
+
+            return (Context.Stage) context.optQ.pop();
+        }
+
+        @Override
+        public Void visitSumExpr(MySQLParser.SumExprContext ctx) {
+            if (ctx.name.getType() == MySQLLexer.COUNT_SYMBOL) {
+                this.context.optQ.push(Context.Stage.COUNT);
+            }
+            return null;
         }
     }
 }

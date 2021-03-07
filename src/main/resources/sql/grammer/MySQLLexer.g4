@@ -350,7 +350,7 @@ CONTEXT_SYMBOL:                  C O N T E X T;
 CONTINUE_SYMBOL:                 C O N T I N U E;                            // SQL-2003-R
 CONTRIBUTORS_SYMBOL:             C O N T R I B U T O R S                     {serverVersion < 50700}?;
 CONVERT_SYMBOL:                  C O N V E R T;                              // SQL-2003-N
-COUNT_SYMBOL:                    C O U N T                                   { setType(determineFunction(COUNT_SYMBOL)); }; // SQL-2003-N
+COUNT_SYMBOL:                    C O U N T;
 CPU_SYMBOL:                      C P U;
 CREATE_SYMBOL:                   C R E A T E;                                // SQL-2003-R
 CROSS_SYMBOL:                    C R O S S;                                  // SQL-2003-R
@@ -566,7 +566,7 @@ MASTER_LOG_FILE_SYMBOL:          M A S T E R '_' L O G '_' F I L E;
 MASTER_LOG_POS_SYMBOL:           M A S T E R '_' L O G '_' P O S;
 MASTER_PASSWORD_SYMBOL:          M A S T E R '_' P A S S W O R D;
 MASTER_PORT_SYMBOL:              M A S T E R '_' P O R T;
-MASTER_RETRY_COUNT_SYMBOL:       M A S T E R '_' R E T R Y '_' C O U N T     {serverVersion >= 50601}?;
+MASTER_RETRY_COUNT_SYMBOL:       M A S T E R '_' R E T R Y '_' C O U N T;
 MASTER_SERVER_ID_SYMBOL:         M A S T E R '_' S E R V E R '_' I D;
 MASTER_SSL_CAPATH_SYMBOL:        M A S T E R '_' S S L '_' C A P A T H;
 MASTER_SSL_CA_SYMBOL:            M A S T E R '_' S S L '_' C A;

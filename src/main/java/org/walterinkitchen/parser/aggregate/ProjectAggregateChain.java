@@ -54,7 +54,12 @@ public class ProjectAggregateChain extends AbsAggregateChain {
         }
 
         String finalKeyWord = mode == 2 ? "$addFields" : "$project";
-        return project.isEmpty() ? Collections.emptyList() : Collections.singletonList(x -> new Document(finalKeyWord, project));
+        if (project.isEmpty()) {
+            return Collections.emptyList();
+        }
+        Document doc = new Document(finalKeyWord, project);
+        List<AggregationOperation> operations = Collections.singletonList(x -> doc);
+        return operations;
     }
 
     protected class Context {

@@ -13,7 +13,7 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Map;
 
-public class GrammarTest {
+public class SelectTest {
     private MongoTemplate mongoTemplate() {
         return Mongo.mongoTemplate();
     }
@@ -604,6 +604,59 @@ public class GrammarTest {
                 throw new RuntimeException("test failed");
             }
         }
+
+        template.dropCollection(Person.class);
+    }
+
+    @Test
+    public void selectCountTest() throws ParseException {
+        MongoTemplate template = mongoTemplate();
+        template.dropCollection(Person.class);
+
+        BaseMongoProvider provider = new BaseMongoProvider(template);
+
+        //Insert test data
+        Person petter = new Person();
+        petter.setFirstName("petter");
+        petter.setSalary(55000.0);
+        petter.setBonusRate(10);
+        petter.setCity("Shanghai");
+        petter.setBornDate(new SimpleDateFormat("yyyy-MM-dd").parse("1990-03-28"));
+        petter.setTitle(Person.Title.BOSS);
+        template.insert(petter);
+
+        Person walter = new Person();
+        walter.setFirstName("walter");
+        walter.setSalary(35000.0);
+        walter.setBonusRate(10);
+        walter.setCity("Beijing");
+        walter.setBornDate(new SimpleDateFormat("yyyy-MM-dd").parse("1993-02-20"));
+        walter.setTitle(Person.Title.BOSS);
+        template.insert(walter);
+
+        Person jhon = new Person();
+        jhon.setFirstName("Jhon");
+        jhon.setSalary(30000.0);
+        jhon.setBonusRate(25);
+        jhon.setCity("Shanghai");
+        jhon.setBornDate(new SimpleDateFormat("yyyy-MM-dd").parse("1988-01-18"));
+        jhon.setTitle(Person.Title.ENGINEER);
+        jhon.setAdvance(false);
+        template.insert(jhon);
+
+        Person bob = new Person();
+        bob.setFirstName("Bob");
+        bob.setSecondName("Little");
+        bob.setCity("Guangzhou");
+        bob.setSalary(20000.0);
+        bob.setBonusRate(25);
+        bob.setBornDate(new SimpleDateFormat("yyyy-MM-dd").parse("1999-11-12"));
+        bob.setTitle(Person.Title.ENGINEER);
+        bob.setAdvance(true);
+        template.insert(bob);
+
+        String ql = "SELECT COUNT(*) as total FROM person";
+        List<Object> result = provider.query(ql, Object.class);
 
         template.dropCollection(Person.class);
     }

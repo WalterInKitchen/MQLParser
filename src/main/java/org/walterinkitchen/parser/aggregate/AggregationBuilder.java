@@ -17,7 +17,8 @@ public class AggregationBuilder {
     public static AggregationBuilder buildDefaultBuilder() {
         EmptyAggregateChain tail = new EmptyAggregateChain(null);
         ProjectAggregateChain select = new ProjectAggregateChain(tail);
-        LimitAggregateChain limit = new LimitAggregateChain(select);
+        CountAggregateChain count = new CountAggregateChain(select);
+        LimitAggregateChain limit = new LimitAggregateChain(count);
         SortAggregateChain sort = new SortAggregateChain(limit);
         GroupByAggregateChain group = new GroupByAggregateChain(sort);
         MatchAggregateChain match = new MatchAggregateChain(group);
