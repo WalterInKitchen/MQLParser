@@ -9,9 +9,16 @@ public class CountExpression implements Expression {
     @Setter(AccessLevel.PROTECTED)
     protected String alis;
 
-    public static CountExpression build(String alis) {
+    /**
+     * 要count的字段名
+     */
+    @Setter(AccessLevel.PROTECTED)
+    protected Expression expr;
+
+    public static CountExpression build(Expression expr, String alis) {
         CountExpression expression = new CountExpression();
         expression.setAlis(alis);
+        expression.setExpr(expr);
         return expression;
     }
 

@@ -656,7 +656,17 @@ public class SelectTest {
         template.insert(bob);
 
         String ql = "SELECT COUNT(*) as total FROM person";
-        List<Object> result = provider.query(ql, Object.class);
+        List<Map> result = provider.query(ql, Map.class);
+        if (!result.get(0).get("total").equals(4)) {
+            throw new RuntimeException("test failed");
+        }
+
+        ql = "SELECT COUNT(advance) as total FROM person";
+        result = provider.query(ql, Map.class);
+        if (!result.get(0).get("total").equals(2)) {
+            throw new RuntimeException("test failed");
+        }
+
 
         template.dropCollection(Person.class);
     }

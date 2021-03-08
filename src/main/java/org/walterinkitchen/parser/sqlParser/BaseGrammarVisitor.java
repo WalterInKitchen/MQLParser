@@ -190,11 +190,10 @@ public class BaseGrammarVisitor extends MySQLParserBaseVisitor<BaseGrammarVisito
             ctx.selectAlias().accept(this);
             Object alObj = this.context.optQ.pop();
             alias = ((StringLiteralExpression) alObj).getText();
-
         }
         //count
         if (this.context.currentScope() == Context.Stage.COUNT) {
-            CountExpression count = CountExpression.build(alias);
+            CountExpression count = CountExpression.build(expression, alias);
             this.context.optQ.push(count);
             return null;
         }
@@ -708,6 +707,12 @@ public class BaseGrammarVisitor extends MySQLParserBaseVisitor<BaseGrammarVisito
         } else if (ctx.MULT_OPERATOR() != null) {
             expression = new AllElementExpression();
         }
+
+        if (this.context.currentScope().equals(Context.Stage.COUNT)) {
+            this.context.optQ.push(expression);
+            return null;
+        }
+
         BaseAccumulatorExpression baseAccumulatorExpression = BaseAccumulatorExpression.build(type, expression);
         this.context.optQ.push(baseAccumulatorExpression);
         return null;

@@ -42,5 +42,4 @@ public class MatchAggregateChain extends AbsAggregateChain {
 
         return operations;
     }
-
 }
