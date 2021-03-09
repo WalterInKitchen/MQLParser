@@ -670,4 +670,66 @@ public class SelectTest {
 
         template.dropCollection(Person.class);
     }
+
+    @Test
+    public void betweenTest() throws ParseException {
+        MongoTemplate template = mongoTemplate();
+        template.dropCollection(Person.class);
+
+        BaseMongoProvider provider = new BaseMongoProvider(template);
+
+        //Insert test data
+        Person petter = new Person();
+        petter.setFirstName("petter");
+        petter.setSecondName("llsa");
+        petter.setSalary(55000.0);
+        petter.setBonusRate(10);
+        petter.setCity("Shanghai");
+        petter.setBornDate(new SimpleDateFormat("yyyy-MM-dd").parse("1990-03-28"));
+        petter.setTitle(Person.Title.BOSS);
+        template.insert(petter);
+
+        Person walter = new Person();
+        walter.setFirstName("walter");
+        walter.setSecondName("journ");
+        walter.setSalary(35000.0);
+        walter.setBonusRate(10);
+        walter.setCity("Beijing");
+        walter.setBornDate(new SimpleDateFormat("yyyy-MM-dd").parse("1993-02-20"));
+        walter.setTitle(Person.Title.BOSS);
+        template.insert(walter);
+
+        Person jhon = new Person();
+        jhon.setFirstName("Jhon");
+        jhon.setSecondName("baby");
+        jhon.setSalary(18000.0);
+        jhon.setBonusRate(25);
+        jhon.setCity("Shanghai");
+        jhon.setBornDate(new SimpleDateFormat("yyyy-MM-dd").parse("1988-01-18"));
+        jhon.setTitle(Person.Title.ENGINEER);
+        jhon.setAdvance(false);
+        template.insert(jhon);
+
+        Person bob = new Person();
+        bob.setFirstName("Bob");
+        bob.setSecondName("little");
+        bob.setCity("Guangzhou");
+        bob.setSalary(20000.0);
+        bob.setBonusRate(25);
+        bob.setBornDate(new SimpleDateFormat("yyyy-MM-dd").parse("1999-11-12"));
+        bob.setTitle(Person.Title.ENGINEER);
+        bob.setAdvance(true);
+        template.insert(bob);
+
+        String ql = "SELECT * FROM person WHERE secondName BETWEEN 'little' AND 'journ';";
+        List<Person> people = provider.query(ql, Person.class);
+        for (Person person : people) {
+            if (!person.getSecondName().equals("little")
+                    && !person.getSecondName().equals("journ")) {
+                throw new RuntimeException("test failed");
+            }
+        }
+
+        template.dropCollection(Person.class);
+    }
 }

@@ -528,6 +528,15 @@ public class BaseGrammarVisitor extends MySQLParserBaseVisitor<BaseGrammarVisito
         ctx.predicate().accept(this);
         Expression expr2 = (Expression) this.context.optQ.pop();
 
+        //对文本应用between
+        if (expr1 instanceof StringLiteralExpression
+                || expr2 instanceof StringLiteralExpression) {
+            InArrayCompareExpression inExpr = InArrayCompareExpression
+                    .build(expression, ArrayExpression.build(Arrays.asList(expr1, expr2)));
+            this.context.optQ.push(inExpr);
+            return null;
+        }
+
         BaseCompareExpression greaterThanSmaller = BaseCompareExpression.build(expression, BaseCompareExpression.Comparator.GTE, expr1);
         BaseCompareExpression smallerThanBigger = BaseCompareExpression.build(expression, BaseCompareExpression.Comparator.LTE, expr2);
         expression = AndExpression.build(Arrays.asList(greaterThanSmaller, smallerThanBigger));
