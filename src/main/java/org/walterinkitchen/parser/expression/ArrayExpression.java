@@ -6,13 +6,14 @@ import lombok.Setter;
 
 import java.util.List;
 
-public class ArrayExpression implements Expression {
+public class ArrayExpression implements Expression, DistinctAble {
 
     @Getter
     @Setter(AccessLevel.PROTECTED)
     protected List<Expression> expressions;
+    private boolean distinct;
 
-    public static ArrayExpression build(List<Expression> expressions){
+    public static ArrayExpression build(List<Expression> expressions) {
         ArrayExpression expression = new ArrayExpression();
         expression.setExpressions(expressions);
         return expression;
@@ -21,5 +22,15 @@ public class ArrayExpression implements Expression {
     @Override
     public <C, T> T accept(ExpressionVisitor<C, T> visitor, C context) {
         return visitor.visit(this, context);
+    }
+
+    @Override
+    public void setDistinct(boolean distinct) {
+        this.distinct = distinct;
+    }
+
+    @Override
+    public boolean isDistinct() {
+        return this.distinct;
     }
 }

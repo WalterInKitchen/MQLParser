@@ -718,6 +718,13 @@ public class BaseGrammarVisitor extends MySQLParserBaseVisitor<BaseGrammarVisito
         }
 
         if (this.context.currentScope().equals(Context.Stage.COUNT)) {
+            if (ctx.DISTINCT_SYMBOL() != null) {
+                ctx.exprList().accept(this);
+                expression = (Expression) this.context.optQ.pop();
+                if (expression instanceof DistinctAble) {
+                    ((DistinctAble) expression).setDistinct(true);
+                }
+            }
             this.context.optQ.push(expression);
             return null;
         }

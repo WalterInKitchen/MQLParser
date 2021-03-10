@@ -11,7 +11,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-public class CountAggregateChain extends EmptyAggregateChain {
+public class CountAggregateChain extends EmptyAggregateChain
+        implements ExpressionVisitor<Void, List<AggregationOperation>> {
 
     protected CountAggregateChain(AbsAggregateChain next) {
         super(next);
@@ -39,6 +40,12 @@ public class CountAggregateChain extends EmptyAggregateChain {
         }
         List<AggregationOperation> operations = new ArrayList<>();
         CountExpression expr = expressions.get(0);
+
+        if (expr.getExpr() instanceof DistinctAble
+                && ((DistinctAble) expr.getExpr()).isDistinct()) {
+            //count转group
+            return countToGroup(expr, context);
+        }
         if (expr.getExpr() instanceof FieldExpression) {
             //只统计非null字段
             Expression notNull = NotExpression.build(CompareIsExpression.build(expr.getExpr(), CompareIsExpression.Type.NULL));
@@ -54,5 +61,11 @@ public class CountAggregateChain extends EmptyAggregateChain {
         Document doc = new Document("$count", expr.getAlis() == null ? "count" : expr.getAlis());
         operations.add(x -> doc);
         return operations;
+    }
+
+    private Collection<? extends AggregationOperation> countToGroup(CountExpression expr, Context context) {
+        Expression exprExpr = expr.getExpr();
+
+        return null;
     }
 }
