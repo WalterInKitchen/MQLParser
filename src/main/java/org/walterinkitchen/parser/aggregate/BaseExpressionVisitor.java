@@ -257,6 +257,17 @@ public class BaseExpressionVisitor implements org.walterinkitchen.parser.express
     }
 
     @Override
+    public Void visit(IfNullExpression expression, ExprContext context) {
+        expression.getExpression().accept(this, context);
+        Object expr = context.getOptQ().pop();
+        expression.getReplacement().accept(this, context);
+        Object replacement = context.getOptQ().pop();
+        Document document = new Document("$ifNull", Arrays.asList(expr, replacement));
+        context.getOptQ().push(document);
+        return null;
+    }
+
+    @Override
     public Void visit(AllElementExpression expression, ExprContext context) {
         context.getOptQ().push("*");
         return null;

@@ -116,4 +116,8 @@ public interface ExpressionVisitor<C, T> {
     default T visit(CountExpression expression, C context) {
         return visitDefault(expression, context);
     }
+
+    default T visit(IfNullExpression expression, C context) {
+        return visitDefault(expression, context);
+    }
 }
