@@ -273,6 +273,16 @@ public class BaseExpressionVisitor implements org.walterinkitchen.parser.express
         return null;
     }
 
+    @Override
+    public Void visit(StringConvertExpression expression, ExprContext context) {
+        expression.getExpression().accept(this, context);
+        Object expr = context.getOptQ().pop();
+        String cmd = expression.getMethod().toCmd();
+        Document document = new Document("$" + cmd, expr);
+        context.getOptQ().push(document);
+        return null;
+    }
+
     public static BaseExpressionVisitor getInstance() {
         if (instance == null) {
             synchronized (BaseExpressionVisitor.class) {

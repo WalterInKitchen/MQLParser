@@ -789,7 +789,53 @@ public class SelectTest {
             BigDecimal rate = new BigDecimal(String.valueOf(map.get("bonusRate")));
             BigDecimal income = new BigDecimal(String.valueOf(map.get("income")));
             BigDecimal realIncome = salary.multiply(rate.divide(new BigDecimal("100")).add(new BigDecimal("1")));
-            if(realIncome.subtract(income).compareTo(BigDecimal.ZERO)!=0){
+            if (realIncome.subtract(income).compareTo(BigDecimal.ZERO) != 0) {
+                throw new RuntimeException("test failed");
+            }
+        }
+
+        template.dropCollection(Person.class);
+    }
+
+    @Test
+    public void ucaseAndLcaseTest() throws ParseException {
+        MongoTemplate template = mongoTemplate();
+        template.dropCollection(Person.class);
+
+        BaseMongoProvider provider = new BaseMongoProvider(template);
+
+        //Insert test data
+        Person petter = new Person();
+        petter.setFirstName("petter");
+        petter.setSecondName("llsa");
+        template.insert(petter);
+
+        Person walter = new Person();
+        walter.setFirstName("walter");
+        walter.setSecondName("journ");
+        template.insert(walter);
+
+        Person jhon = new Person();
+        jhon.setFirstName("Jhon");
+        jhon.setSecondName("baby");
+        template.insert(jhon);
+
+        Person bob = new Person();
+        bob.setFirstName("Bob");
+        bob.setSecondName("little");
+        template.insert(bob);
+
+        String ql = "SELECT *, UCASE(firstName) as uname, LCASE(firstName) as lname FROM person;";
+        List<Map> list = provider.query(ql, Map.class);
+
+        for (Map map : list) {
+            String firstName = String.valueOf(map.get("firstName"));
+            String uname = String.valueOf(map.get("uname"));
+            String lname = String.valueOf(map.get("lname"));
+            if (!firstName.toUpperCase().equals(uname)) {
+                throw new RuntimeException("test failed");
+            }
+            if (!firstName.toLowerCase().equals(lname)) {
                 throw new RuntimeException("test failed");
             }
         }

@@ -45,5 +45,10 @@ public class ColumnNameProvider {
         public String visit(StringLiteralExpression expression, Void context) {
             return expression.getText();
         }
+
+        @Override
+        public String visit(StringConvertExpression expression, Void context) {
+            return expression.getMethod().toCmd();
+        }
     }
 }
