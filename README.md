@@ -28,6 +28,76 @@ MongoProvider provider = new BaseMongoProvider(mongoTemplate);
 List<Object> result = provider.query(ql, Object.class);
 ```
 
-## 参考文档
+## 工作流程
+
+**解析流程：**
+
+![流程](./image/流程.png)
+
+![SQL->Tree](./image/SQLtoTree.png)
+
+![tree->stage](./image/treeToStage.png)
+
+```json
+[
+    {
+        "$addFields": {
+            "id": {
+                "$toString": "$_id"
+            }
+        }
+    },
+    {
+        "$match": {
+            "$expr": {
+                "$and": [
+                    {
+                        "$lt": [
+                            "$age",
+                            {
+                                "$numberDecimal": "30"
+                            }
+                        ]
+                    },
+                    {
+                        "$eq": [
+                            "$title",
+                            "engineer"
+                        ]
+                    }
+                ]
+            }
+        }
+    },
+    {
+        "$project": {
+            "name": "$name",
+            "MULTI": {
+                "$multiply": [
+                    "$salary",
+                    {
+                        "$add": [
+                            {
+                                "$numberDecimal": "1"
+                            },
+                            "$bounsRate"
+                        ]
+                    }
+                ]
+            }
+        }
+    },
+    {
+        "$project": {
+            "_id": 0
+        }
+    }
+]
+```
+
+
+
+## 文档
 
 [语法说明与示例](doc/语法.md)
+
