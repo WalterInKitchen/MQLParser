@@ -283,6 +283,16 @@ public class BaseExpressionVisitor implements org.walterinkitchen.parser.express
         return null;
     }
 
+    @Override
+    public Void visit(RoundExpression expression, ExprContext context) {
+        expression.getExpr().accept(this, context);
+        Object expr = context.getOptQ().pop();
+        Integer place = expression.getPlace();
+        Document doc = new Document("$round", Arrays.asList(expr, place));
+        context.getOptQ().push(doc);
+        return null;
+    }
+
     public static BaseExpressionVisitor getInstance() {
         if (instance == null) {
             synchronized (BaseExpressionVisitor.class) {

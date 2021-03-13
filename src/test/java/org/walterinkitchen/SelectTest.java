@@ -842,4 +842,42 @@ public class SelectTest {
 
         template.dropCollection(Person.class);
     }
+
+    @Test
+    public void roundTest() throws ParseException {
+        MongoTemplate template = mongoTemplate();
+        template.dropCollection(Person.class);
+
+        BaseMongoProvider provider = new BaseMongoProvider(template);
+
+        //Insert test data
+        Person petter = new Person();
+        petter.setFirstName("petter");
+        petter.setSecondName("llsa");
+        petter.setSalary(200.12344);
+        template.insert(petter);
+
+        Person walter = new Person();
+        walter.setFirstName("walter");
+        walter.setSecondName("journ");
+        walter.setSalary(123.12344);
+        template.insert(walter);
+
+        Person jhon = new Person();
+        jhon.setFirstName("Jhon");
+        jhon.setSecondName("baby");
+        jhon.setSalary(123.456);
+        template.insert(jhon);
+
+        Person bob = new Person();
+        bob.setFirstName("Bob");
+        bob.setSecondName("little");
+        bob.setSalary(768.080456);
+        template.insert(bob);
+
+        String ql = "SELECT firstName, salary, ROUND(salary, 0) as 'income' FROM person;";
+        List<Person> res = provider.query(ql, Person.class);
+
+        template.dropCollection(Person.class);
+    }
 }

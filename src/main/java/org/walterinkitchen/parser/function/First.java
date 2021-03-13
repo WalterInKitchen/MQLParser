@@ -10,7 +10,6 @@ import java.util.List;
 
 public class First extends Average {
     public static final String FUNC_NAME = "first";
-    private final BaseExpressionVisitor expressionVisitor = BaseExpressionVisitor.getInstance();
 
     @Override
     public Expression call(@NonNull List<Expression> args) {

@@ -19,6 +19,7 @@ public class SimpleFunctionProvider implements FunctionProvider {
         functionMap.put(IfNull.FUNC_NAME.toLowerCase(), new IfNull());
         functionMap.put(ToUpper.FUNC_NAME.toLowerCase(), new ToUpper());
         functionMap.put(ToLower.FUNC_NAME.toLowerCase(), new ToLower());
+        functionMap.put(Round.FUNC_NAME.toLowerCase(), new Round());
     }
 
     @Override

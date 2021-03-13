@@ -124,4 +124,8 @@ public interface ExpressionVisitor<C, T> {
     default T visit(StringConvertExpression expression, C context) {
         return visitDefault(expression, context);
     }
+
+    default T visit(RoundExpression expression, C context) {
+        return visitDefault(expression, context);
+    }
 }
