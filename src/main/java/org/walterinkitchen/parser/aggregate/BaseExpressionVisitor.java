@@ -179,6 +179,12 @@ public class BaseExpressionVisitor implements org.walterinkitchen.parser.express
     }
 
     @Override
+    public Void visit(RuntimeFunctionCallExpression expression, ExprContext context) {
+        context.getOptQ().push(expression.explain());
+        return null;
+    }
+
+    @Override
     public Void visit(FieldExpression expression, ExprContext context) {
         String field = "$" + expression.getField();
         context.getOptQ().push(field);

@@ -7,8 +7,18 @@ import java.util.Map;
 
 public class SimpleFunctionProvider implements FunctionProvider {
     private static final Map<String, Function> functionMap = new HashMap<>();
+    private static final Map<String, Function> runtimeFunctionMap = new HashMap<>();
 
     static {
+        initFunc();
+        initRuntimeFunc();
+    }
+
+    private static void initRuntimeFunc() {
+        runtimeFunctionMap.put(NowRuntimeFunc.FUNC_NAME.toLowerCase(), new NowRuntimeFunc());
+    }
+
+    private static void initFunc() {
         functionMap.put(DateToString.FUNC_NAME.toLowerCase(), new DateToString());
         functionMap.put(DateFromString.FUNC_NAME.toLowerCase(), new DateFromString());
         functionMap.put(Average.FUNC_NAME.toLowerCase(), new Average());
@@ -25,5 +35,10 @@ public class SimpleFunctionProvider implements FunctionProvider {
     @Override
     public Function getFunctionByName(@NonNull String name) {
         return functionMap.get(name.toLowerCase());
+    }
+
+    @Override
+    public Function getRuntimeFunctionByName(String name) {
+        return runtimeFunctionMap.get(name.toLowerCase());
     }
 }

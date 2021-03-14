@@ -5,4 +5,6 @@ package org.walterinkitchen.parser.function;
  */
 public interface FunctionProvider {
     Function getFunctionByName(String name);
+
+    Function getRuntimeFunctionByName(String name);
 }

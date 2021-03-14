@@ -60,10 +60,6 @@ tokens {
     ULONGLONG_NUMBER
 }
 
-@postinclude {
-#include "MySQLBaseLexer.h"
-}
-
 //-------------------------------------------------------------------------------------------------
 
 @header {/*
@@ -639,7 +635,7 @@ NONBLOCKING_SYMBOL:              N O N B L O C K I N G                       {50
 NOT_SYMBOL:
     N O T                                                                    { setType(isSqlModeActive(HighNotPrecedence) ? NOT2_SYMBOL: NOT_SYMBOL); }
 ;                                                                            // SQL-2003-R
-NOW_SYMBOL:                      N O W                                       { setType(determineFunction(NOW_SYMBOL)); };
+NOW_SYMBOL:                      N O W;
 NO_SYMBOL:                       N O;                                        // SQL-2003-R
 NO_WAIT_SYMBOL:                  N O '_' W A I T;
 NO_WRITE_TO_BINLOG_SYMBOL:       N O '_' W R I T E '_' T O '_' B I N L O G;

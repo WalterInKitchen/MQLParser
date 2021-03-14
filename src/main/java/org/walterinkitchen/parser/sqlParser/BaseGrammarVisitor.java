@@ -733,6 +733,25 @@ public class BaseGrammarVisitor extends MySQLParserBaseVisitor<BaseGrammarVisito
         return null;
     }
 
+    @Override
+    public Result visitRuntimeFunctionCall(MySQLParser.RuntimeFunctionCallContext ctx) {
+        String funcName = ctx.name.getText();
+        List<Expression> args = new ArrayList<>();
+        if (ctx.timeFunctionParameters() != null) {
+            ctx.timeFunctionParameters().accept(this);
+            if (!this.context.optQ.isEmpty()) {
+                @SuppressWarnings("unchecked")
+                List<Expression> list = (List<Expression>) this.context.optQ.pop();
+                args.addAll(list);
+            }
+        }
+
+        Function function = this.context.getFunctionProvider().getRuntimeFunctionByName(funcName);
+        Expression expression = function.call(args);
+        this.context.optQ.push(expression);
+        return null;
+    }
+
     @Data
     private static class Context {
         private Deque<Object> optQ = new LinkedList<>();
