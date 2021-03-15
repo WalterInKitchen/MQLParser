@@ -299,6 +299,15 @@ public class BaseExpressionVisitor implements org.walterinkitchen.parser.express
         return null;
     }
 
+    @Override
+    public Void visit(AbsFunctionExpression expression, ExprContext context) {
+        expression.getExpression().accept(this, context);
+        Object expr = context.getOptQ().pop();
+        Document doc = new Document("$abs", expr);
+        context.getOptQ().push(doc);
+        return null;
+    }
+
     public static BaseExpressionVisitor getInstance() {
         if (instance == null) {
             synchronized (BaseExpressionVisitor.class) {

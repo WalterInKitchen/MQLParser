@@ -132,4 +132,8 @@ public interface ExpressionVisitor<C, T> {
     default T visit(RuntimeFunctionCallExpression expression, C context) {
         return visitDefault(expression, context);
     }
+
+    default T visit(AbsFunctionExpression expression, C context) {
+        return visitDefault(expression, context);
+    }
 }

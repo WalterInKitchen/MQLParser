@@ -50,5 +50,10 @@ public class ColumnNameProvider {
         public String visit(StringConvertExpression expression, Void context) {
             return expression.getMethod().toCmd();
         }
+
+        @Override
+        public String visit(AbsFunctionExpression expression, Void context) {
+            return "abs";
+        }
     }
 }
