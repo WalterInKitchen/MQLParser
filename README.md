@@ -34,6 +34,8 @@ List<Object> result = provider.query(ql, Object.class);
 
 ![流程](./image/流程.png)
 
+**解析示例：**
+
 ![SQL->Tree](./image/SQLtoTree.png)
 
 ![tree->stage](./image/treeToStage.png)
