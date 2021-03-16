@@ -146,6 +146,9 @@ public class BaseExpressionVisitor implements org.walterinkitchen.parser.express
             case MINUS:
                 context.getOptQ().push(new Document("$subtract", Arrays.asList(expr1, expr2)));
                 break;
+            case POWER:
+                context.getOptQ().push(new Document("$pow", Arrays.asList(expr1, expr2)));
+                break;
         }
 
         return null;

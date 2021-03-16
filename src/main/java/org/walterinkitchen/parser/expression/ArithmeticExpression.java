@@ -11,7 +11,8 @@ public class ArithmeticExpression implements Expression {
         MINUS,
         MULTI,
         DIV,
-        MOD
+        MOD,
+        POWER
     }
 
     @Getter
