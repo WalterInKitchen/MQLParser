@@ -32,6 +32,7 @@ public class SimpleFunctionProvider implements FunctionProvider {
         functionMap.put(Round.FUNC_NAME.toLowerCase(), new Round());
         functionMap.put(Abs.FUNC_NAME.toLowerCase(), new Abs());
         functionMap.put(Power.FUNC_NAME.toLowerCase(), new Power());
+        functionMap.put(Sqrt.FUNC_NAME.toLowerCase(), new Sqrt());
     }
 
     @Override

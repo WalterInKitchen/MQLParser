@@ -12,7 +12,8 @@ public class ArithmeticExpression implements Expression {
         MULTI,
         DIV,
         MOD,
-        POWER
+        POWER,
+        SQRT
     }
 
     @Getter

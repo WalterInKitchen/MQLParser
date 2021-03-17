@@ -120,8 +120,12 @@ public class BaseExpressionVisitor implements org.walterinkitchen.parser.express
     public Void visit(ArithmeticExpression expression, ExprContext context) {
         expression.getExpr1().accept(this, context);
         Object expr1 = context.getOptQ().pop();
-        expression.getExpr2().accept(this, context);
-        Object expr2 = context.getOptQ().pop();
+
+        Object expr2 = null;
+        if (expression.getExpr2() != null) {
+            expression.getExpr2().accept(this, context);
+            expr2 = context.getOptQ().pop();
+        }
 
         if (expr1 instanceof List) {
             expr1 = ((List<?>) expr1).get(0);
@@ -148,6 +152,9 @@ public class BaseExpressionVisitor implements org.walterinkitchen.parser.express
                 break;
             case POWER:
                 context.getOptQ().push(new Document("$pow", Arrays.asList(expr1, expr2)));
+                break;
+            case SQRT:
+                context.getOptQ().push(new Document("$sqrt", expr1));
                 break;
         }
 
