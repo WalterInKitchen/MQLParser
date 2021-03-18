@@ -745,6 +745,16 @@ public class BaseGrammarVisitor extends MySQLParserBaseVisitor<BaseGrammarVisito
                 args.addAll(list);
             }
         }
+        if (ctx.expr() != null) {
+            for (MySQLParser.ExprContext expr : ctx.expr()) {
+                expr.accept(this);
+                if (!this.context.optQ.isEmpty()) {
+                    @SuppressWarnings("unchecked")
+                    Expression expression = (Expression) this.context.optQ.pop();
+                    args.add(expression);
+                }
+            }
+        }
 
         Function function = this.context.getFunctionProvider().getRuntimeFunctionByName(funcName);
         Expression expression = function.call(args);

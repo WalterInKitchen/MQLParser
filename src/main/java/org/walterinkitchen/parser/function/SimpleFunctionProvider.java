@@ -16,6 +16,7 @@ public class SimpleFunctionProvider implements FunctionProvider {
 
     private static void initRuntimeFunc() {
         runtimeFunctionMap.put(NowRuntimeFunc.FUNC_NAME.toLowerCase(), new NowRuntimeFunc());
+        runtimeFunctionMap.put(Mod.FUNC_NAME.toLowerCase(), new Mod());
     }
 
     private static void initFunc() {
