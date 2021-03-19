@@ -13,7 +13,8 @@ public class ArithmeticExpression implements Expression {
         DIV,
         MOD,
         POWER,
-        SQRT
+        SQRT,
+        LOG
     }
 
     @Getter

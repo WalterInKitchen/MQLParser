@@ -1093,4 +1093,48 @@ public class SelectTest {
 
         template.dropCollection(Person.class);
     }
+
+    @Test
+    public void logTest() throws ParseException {
+        MongoTemplate template = mongoTemplate();
+        template.dropCollection(Person.class);
+
+        BaseMongoProvider provider = new BaseMongoProvider(template);
+
+        //Insert test data
+        Person petter = new Person();
+        petter.setFirstName("petter");
+        petter.setSalary(100.0);
+        template.insert(petter);
+
+        Person walter = new Person();
+        walter.setFirstName("walter");
+        walter.setSecondName("journ");
+        walter.setSalary(400.0);
+        template.insert(walter);
+
+        Person jhon = new Person();
+        jhon.setFirstName("Jhon");
+        jhon.setSecondName("baby");
+        jhon.setSalary(900.0);
+        template.insert(jhon);
+
+        Person bob = new Person();
+        bob.setFirstName("Bob");
+        bob.setSecondName("little");
+        bob.setSalary(1600.0);
+        template.insert(bob);
+
+        String ql = "SELECT salary, LOG(salary,10) as income FROM person;";
+        List<Person> res = provider.query(ql, Person.class);
+        for (Person person : res) {
+            BigDecimal salary = new BigDecimal(String.valueOf(person.getSalary()));
+            BigDecimal income = new BigDecimal(String.valueOf(person.getIncome()));
+            if (income == null) {
+                throw new RuntimeException("test failed");
+            }
+        }
+
+        template.dropCollection(Person.class);
+    }
 }
