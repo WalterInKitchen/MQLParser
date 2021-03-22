@@ -159,6 +159,9 @@ public class BaseExpressionVisitor implements org.walterinkitchen.parser.express
             case LOG:
                 context.getOptQ().push(new Document("$log", Arrays.asList(expr1, expr2)));
                 break;
+            case LN:
+                context.getOptQ().push(new Document("$ln", expr1));
+                break;
         }
 
         return null;
