@@ -162,6 +162,13 @@ public class BaseExpressionVisitor implements org.walterinkitchen.parser.express
             case LN:
                 context.getOptQ().push(new Document("$ln", expr1));
                 break;
+            case TRUNC:
+                if (expr2 == null) {
+                    context.getOptQ().push(new Document("$trunc", expr1));
+                } else {
+                    context.getOptQ().push(new Document("$trunc", Arrays.asList(expr1, expr2)));
+                }
+                break;
         }
 
         return null;
