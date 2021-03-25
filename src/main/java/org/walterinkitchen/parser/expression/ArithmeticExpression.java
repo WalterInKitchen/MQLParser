@@ -16,7 +16,8 @@ public class ArithmeticExpression implements Expression {
         SQRT,
         LOG,
         LN,
-        TRUNC
+        TRUNC,
+        FLOOR
     }
 
     @Getter

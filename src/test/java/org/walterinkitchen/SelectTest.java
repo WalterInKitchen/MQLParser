@@ -1227,4 +1227,50 @@ public class SelectTest {
 
         template.dropCollection(Person.class);
     }
+
+
+    @Test
+    public void floorTest() throws ParseException {
+        MongoTemplate template = mongoTemplate();
+        template.dropCollection(Person.class);
+
+        BaseMongoProvider provider = new BaseMongoProvider(template);
+
+        //Insert test data
+        Person petter = new Person();
+        petter.setFirstName("petter");
+        petter.setSalary(100.22);
+        template.insert(petter);
+
+        Person walter = new Person();
+        walter.setFirstName("walter");
+        walter.setSecondName("journ");
+        walter.setSalary(400.33);
+        template.insert(walter);
+
+        Person jhon = new Person();
+        jhon.setFirstName("Jhon");
+        jhon.setSecondName("baby");
+        jhon.setSalary(900.11);
+        template.insert(jhon);
+
+        Person bob = new Person();
+        bob.setFirstName("Bob");
+        bob.setSecondName("little");
+        bob.setSalary(1600.12);
+        template.insert(bob);
+
+        String ql = "SELECT salary, FLOOR(salary) as income FROM person;";
+        List<Person> res = provider.query(ql, Person.class);
+        for (Person person : res) {
+            BigDecimal salary = new BigDecimal(String.valueOf(person.getSalary()));
+            BigDecimal income = new BigDecimal(String.valueOf(person.getIncome()));
+            BigDecimal decimal = salary.setScale(0, RoundingMode.DOWN);
+            if (income.compareTo(decimal) != 0) {
+                throw new RuntimeException("test failed");
+            }
+        }
+
+        template.dropCollection(Person.class);
+    }
 }

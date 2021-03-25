@@ -169,6 +169,9 @@ public class BaseExpressionVisitor implements org.walterinkitchen.parser.express
                     context.getOptQ().push(new Document("$trunc", Arrays.asList(expr1, expr2)));
                 }
                 break;
+            case FLOOR:
+                context.getOptQ().push(new Document("$floor", Arrays.asList(expr1)));
+                break;
         }
 
         return null;

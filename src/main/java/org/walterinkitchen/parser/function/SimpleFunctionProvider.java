@@ -37,6 +37,7 @@ public class SimpleFunctionProvider implements FunctionProvider {
         functionMap.put(Log.FUNC_NAME.toLowerCase(), new Log());
         functionMap.put(Ln.FUNC_NAME.toLowerCase(), new Ln());
         functionMap.put(Trunc.FUNC_NAME.toLowerCase(), new Trunc());
+        functionMap.put(Floor.FUNC_NAME.toLowerCase(), new Floor());
     }
 
     @Override
