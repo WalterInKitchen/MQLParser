@@ -17,7 +17,8 @@ public class ArithmeticExpression implements Expression {
         LOG,
         LN,
         TRUNC,
-        FLOOR
+        FLOOR,
+        CEIL
     }
 
     @Getter

@@ -1271,6 +1271,18 @@ public class SelectTest {
             }
         }
 
+        ql = "SELECT salary, CEIL(salary) as income FROM person;";
+        res = provider.query(ql, Person.class);
+        for (Person person : res) {
+            BigDecimal salary = new BigDecimal(String.valueOf(person.getSalary()));
+            BigDecimal income = new BigDecimal(String.valueOf(person.getIncome()));
+            income = income.subtract(BigDecimal.ONE);
+            BigDecimal decimal = salary.setScale(0, RoundingMode.DOWN);
+            if (income.compareTo(decimal) != 0) {
+                throw new RuntimeException("test failed");
+            }
+        }
+
         template.dropCollection(Person.class);
     }
 }
