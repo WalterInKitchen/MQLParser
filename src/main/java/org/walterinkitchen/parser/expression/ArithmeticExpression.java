@@ -18,7 +18,8 @@ public class ArithmeticExpression implements Expression {
         LN,
         TRUNC,
         FLOOR,
-        CEIL
+        CEIL,
+        SIN
     }
 
     @Getter
