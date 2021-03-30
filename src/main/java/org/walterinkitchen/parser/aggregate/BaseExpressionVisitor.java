@@ -178,6 +178,16 @@ public class BaseExpressionVisitor implements org.walterinkitchen.parser.express
             case SIN:
                 context.getOptQ().push(new Document("$sin", Arrays.asList(expr1)));
                 break;
+            case SINH:
+                context.getOptQ().push(new Document("$sinh", Arrays.asList(expr1)));
+                break;
+            case COS:
+                context.getOptQ().push(new Document("$cos", Arrays.asList(expr1)));
+                break;
+            case COSH:
+                context.getOptQ().push(new Document("$cosh", Arrays.asList(expr1)));
+                break;
+
         }
 
         return null;

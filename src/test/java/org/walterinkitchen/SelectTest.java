@@ -1326,6 +1326,16 @@ public class SelectTest {
             }
         }
 
+        ql = "SELECT salary, COS(salary) as income FROM person;";
+        res = provider.query(ql, Person.class);
+        for (Person person : res) {
+            BigDecimal income = new BigDecimal(String.valueOf(person.getIncome()));
+            if (income.compareTo(BigDecimal.ONE) > 0) {
+                throw new RuntimeException("test failed");
+            }
+        }
+
+
         template.dropCollection(Person.class);
     }
 }

@@ -19,7 +19,10 @@ public class ArithmeticExpression implements Expression {
         TRUNC,
         FLOOR,
         CEIL,
-        SIN
+        SIN,
+        SINH,
+        COS,
+        COSH
     }
 
     @Getter
