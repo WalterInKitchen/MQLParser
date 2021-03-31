@@ -22,7 +22,8 @@ public class ArithmeticExpression implements Expression {
         SIN,
         SINH,
         COS,
-        COSH
+        COSH,
+        TO_BOOL
     }
 
     @Getter
