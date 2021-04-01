@@ -1374,9 +1374,19 @@ public class SelectTest {
         String ql = "SELECT salary, TOBOOL(salary) as advance FROM person;";
         List<Person> res = provider.query(ql, Person.class);
         for (Person person : res) {
-            BigDecimal income = new BigDecimal(String.valueOf(person.getIncome()));
-            if (income.compareTo(BigDecimal.ONE) > 0) {
+            BigDecimal salary = new BigDecimal(String.valueOf(person.getSalary()));
+            Boolean advance = person.getAdvance();
+            if (advance == null) {
                 throw new RuntimeException("test failed");
+            }
+            if (salary.compareTo(BigDecimal.ZERO) == 0) {
+                if (advance) {
+                    throw new RuntimeException("test failed");
+                }
+            } else {
+                if (!advance) {
+                    throw new RuntimeException("test failed");
+                }
             }
         }
 
