@@ -44,6 +44,7 @@ public class SimpleFunctionProvider implements FunctionProvider {
         functionMap.put(Cos.FUNC_NAME.toLowerCase(), new Cos());
         functionMap.put(Cosh.FUNC_NAME.toLowerCase(), new Cosh());
         functionMap.put(ToBool.FUNC_NAME.toLowerCase(), new ToBool());
+        functionMap.put(ArrayElemAt.FUNC_NAME.toLowerCase(), new ArrayElemAt());
     }
 
     @Override

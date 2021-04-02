@@ -23,7 +23,8 @@ public class ArithmeticExpression implements Expression {
         SINH,
         COS,
         COSH,
-        TO_BOOL
+        TO_BOOL,
+        ARRAY_ELEM_AT
     }
 
     @Getter

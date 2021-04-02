@@ -190,6 +190,9 @@ public class BaseExpressionVisitor implements org.walterinkitchen.parser.express
             case TO_BOOL:
                 context.getOptQ().push(new Document("$toBool", Arrays.asList(expr1)));
                 break;
+            case ARRAY_ELEM_AT:
+                context.getOptQ().push(new Document("$arrayElemAt", Arrays.asList(expr1, expr2)));
+                break;
 
         }
 

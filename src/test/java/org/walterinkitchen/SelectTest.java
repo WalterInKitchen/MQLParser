@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -1389,6 +1390,47 @@ public class SelectTest {
                 }
             }
         }
+
+        template.dropCollection(Person.class);
+    }
+
+    @Test
+    public void arrayElemAtTest() throws ParseException {
+        MongoTemplate template = mongoTemplate();
+        template.dropCollection(Person.class);
+
+        BaseMongoProvider provider = new BaseMongoProvider(template);
+
+        //Insert test data
+        Person petter = new Person();
+        petter.setFirstName("petter");
+        petter.setSalary(0.0);
+        petter.setHobby(Arrays.asList("read", "唱歌", "play games", "eat"));
+        template.insert(petter);
+
+        Person walter = new Person();
+        walter.setFirstName("walter");
+        walter.setSecondName("journ");
+        walter.setSalary(400.33);
+        walter.setHobby(Arrays.asList("发呆", "read", "play games"));
+        template.insert(walter);
+
+        Person jhon = new Person();
+        jhon.setFirstName("Jhon");
+        jhon.setSecondName("baby");
+        jhon.setSalary(900.11);
+        jhon.setHobby(Arrays.asList("sports", "play games", "read"));
+        template.insert(jhon);
+
+        Person bob = new Person();
+        bob.setFirstName("Bob");
+        bob.setSecondName("little");
+        bob.setSalary(1600.12);
+        bob.setHobby(Arrays.asList("sleep", "eat"));
+        template.insert(bob);
+
+        String ql = "SELECT firstName, arrayElemAt(hobby, 1) as most FROM person;";
+        List<Map> res = provider.query(ql, Map.class);
 
         template.dropCollection(Person.class);
     }
