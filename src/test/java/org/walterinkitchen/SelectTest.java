@@ -1434,4 +1434,53 @@ public class SelectTest {
 
         template.dropCollection(Person.class);
     }
+
+    @Test
+    public void toDecimalTest() throws ParseException {
+        MongoTemplate template = mongoTemplate();
+        template.dropCollection(Person.class);
+
+        BaseMongoProvider provider = new BaseMongoProvider(template);
+
+        //Insert test data
+        Person petter = new Person();
+        petter.setFirstName("petter");
+        petter.setSalary(0.0);
+        petter.setHobby(Arrays.asList("read", "唱歌", "play games", "eat"));
+        template.insert(petter);
+
+        Person walter = new Person();
+        walter.setFirstName("walter");
+        walter.setSecondName("journ");
+        walter.setSalary(400.33);
+        walter.setHobby(Arrays.asList("发呆", "read", "play games"));
+        template.insert(walter);
+
+        Person jhon = new Person();
+        jhon.setFirstName("Jhon");
+        jhon.setSecondName("baby");
+        jhon.setSalary(900.11);
+        jhon.setHobby(Arrays.asList("sports", "play games", "read"));
+        template.insert(jhon);
+
+        Person bob = new Person();
+        bob.setFirstName("Bob");
+        bob.setSecondName("little");
+        bob.setSalary(1600.12);
+        bob.setHobby(Arrays.asList("sleep", "eat"));
+        template.insert(bob);
+
+        String ql = "SELECT firstName, salary, salary * toDecimal('1.10') as income FROM person;";
+        List<Person> res = provider.query(ql, Person.class);
+        for (Person person : res) {
+            BigDecimal salary = new BigDecimal(String.valueOf(person.getSalary()));
+            BigDecimal income = new BigDecimal(String.valueOf(person.getIncome()));
+            if (salary.multiply(new BigDecimal("1.10")).compareTo(income) != 0) {
+                throw new RuntimeException("test failed");
+            }
+        }
+
+
+        template.dropCollection(Person.class);
+    }
 }

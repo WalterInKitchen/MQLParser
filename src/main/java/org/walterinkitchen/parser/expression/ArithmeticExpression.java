@@ -24,7 +24,8 @@ public class ArithmeticExpression implements Expression {
         COS,
         COSH,
         TO_BOOL,
-        ARRAY_ELEM_AT
+        TO_DECIMAL,
+        ARRAY_ELEM_AT,
     }
 
     @Getter
