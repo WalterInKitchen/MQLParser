@@ -1483,4 +1483,102 @@ public class SelectTest {
 
         template.dropCollection(Person.class);
     }
+
+    @Test
+    public void toStringTest() throws ParseException {
+        MongoTemplate template = mongoTemplate();
+        template.dropCollection(Person.class);
+
+        BaseMongoProvider provider = new BaseMongoProvider(template);
+
+        //Insert test data
+        Person petter = new Person();
+        petter.setFirstName("petter");
+        petter.setSalary(0.0);
+        petter.setHobby(Arrays.asList("read", "唱歌", "play games", "eat"));
+        template.insert(petter);
+
+        Person walter = new Person();
+        walter.setFirstName("walter");
+        walter.setSecondName("journ");
+        walter.setSalary(400.33);
+        walter.setHobby(Arrays.asList("发呆", "read", "play games"));
+        template.insert(walter);
+
+        Person jhon = new Person();
+        jhon.setFirstName("Jhon");
+        jhon.setSecondName("baby");
+        jhon.setSalary(900.11);
+        jhon.setHobby(Arrays.asList("sports", "play games", "read"));
+        template.insert(jhon);
+
+        Person bob = new Person();
+        bob.setFirstName("Bob");
+        bob.setSecondName("little");
+        bob.setSalary(1600.12);
+        bob.setHobby(Arrays.asList("sleep", "eat"));
+        template.insert(bob);
+
+        String ql = "SELECT firstName, salary, toString(salary) as secondName FROM person;";
+        List<Person> res = provider.query(ql, Person.class);
+        for (Person person : res) {
+            BigDecimal salary = new BigDecimal(String.valueOf(person.getSalary()));
+            BigDecimal salary2 = new BigDecimal(person.getSecondName());
+            if (salary.compareTo(salary2) != 0) {
+                throw new RuntimeException("test failed");
+            }
+        }
+
+
+        template.dropCollection(Person.class);
+    }
+
+    @Test
+    public void toIntTest() throws ParseException {
+        MongoTemplate template = mongoTemplate();
+        template.dropCollection(Person.class);
+
+        BaseMongoProvider provider = new BaseMongoProvider(template);
+
+        //Insert test data
+        Person petter = new Person();
+        petter.setFirstName("petter");
+        petter.setSecondName("10");
+        petter.setSalary(0.0);
+        petter.setHobby(Arrays.asList("read", "唱歌", "play games", "eat"));
+        template.insert(petter);
+
+        Person walter = new Person();
+        walter.setFirstName("walter");
+        walter.setSecondName("20");
+        walter.setSalary(400.33);
+        walter.setHobby(Arrays.asList("发呆", "read", "play games"));
+        template.insert(walter);
+
+        Person jhon = new Person();
+        jhon.setFirstName("Jhon");
+        jhon.setSecondName("18");
+        jhon.setSalary(900.11);
+        jhon.setHobby(Arrays.asList("sports", "play games", "read"));
+        template.insert(jhon);
+
+        Person bob = new Person();
+        bob.setFirstName("Bob");
+        bob.setSecondName("21");
+        bob.setSalary(1600.12);
+        bob.setHobby(Arrays.asList("sleep", "eat"));
+        template.insert(bob);
+
+        String ql = "SELECT firstName, secondName, toInt(secondName) as age FROM person;";
+        List<Person> res = provider.query(ql, Person.class);
+        for (Person person : res) {
+            int age = Integer.parseInt(person.getSecondName());
+            if (person.getAge() != age) {
+                throw new RuntimeException("test failed");
+            }
+        }
+
+
+        template.dropCollection(Person.class);
+    }
 }
