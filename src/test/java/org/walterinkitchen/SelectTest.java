@@ -1569,15 +1569,18 @@ public class SelectTest {
         bob.setHobby(Arrays.asList("sleep", "eat"));
         template.insert(bob);
 
-        String ql = "SELECT firstName, secondName, toInt(secondName) as age FROM person;";
-        List<Person> res = provider.query(ql, Person.class);
-        for (Person person : res) {
-            int age = Integer.parseInt(person.getSecondName());
-            if (person.getAge() != age) {
-                throw new RuntimeException("test failed");
+        List<String> qls = Arrays.asList("SELECT firstName, secondName, toInt(secondName) as age FROM person;",
+                "SELECT firstName, secondName, toLong(secondName) as age FROM person;");
+
+        for (String ql : qls) {
+            List<Person> res = provider.query(ql, Person.class);
+            for (Person person : res) {
+                int age = Integer.parseInt(person.getSecondName());
+                if (person.getAge() != age) {
+                    throw new RuntimeException("test failed");
+                }
             }
         }
-
 
         template.dropCollection(Person.class);
     }

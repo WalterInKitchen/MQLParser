@@ -26,6 +26,7 @@ public class ArithmeticExpression implements Expression {
         TO_BOOL,
         TO_DECIMAL,
         TO_INT,
+        TO_LONG,
         TO_STRING,
         ARRAY_ELEM_AT,
     }

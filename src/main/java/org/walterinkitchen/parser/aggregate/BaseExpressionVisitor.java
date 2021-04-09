@@ -202,6 +202,9 @@ public class BaseExpressionVisitor implements org.walterinkitchen.parser.express
             case TO_INT:
                 context.getOptQ().push(new Document("$toInt", Arrays.asList(expr1)));
                 break;
+            case TO_LONG:
+                context.getOptQ().push(new Document("$toLong", Arrays.asList(expr1)));
+                break;
         }
 
         return null;
