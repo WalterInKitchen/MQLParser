@@ -6,7 +6,7 @@
 
     <groupId>com.github.walterinkitchen</groupId>
     <artifactId>MQLParser</artifactId>
-    <version>1.0.7-SNAPSHOT</version>
+    <version>1.0.8-SNAPSHOT</version>
 
     <name>MQLParser</name>
     <url>https://github.com/WalterInKitchen/MQLParser</url>

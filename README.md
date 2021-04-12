@@ -16,7 +16,7 @@ List<Object> list = provider.query(sql, Object.class);
 <dependency>
     <groupId>com.github.walterinkitchen</groupId>
     <artifactId>MQLParser</artifactId>
-    <version>1.0.7-SNAPSHOT</version>
+    <version>1.0.8-SNAPSHOT</version>
 </dependency>
 ```
 
